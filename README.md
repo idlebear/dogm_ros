@@ -4,6 +4,7 @@
 
 This repository is still WIP and in a pretty early stage. Contributions are kindly appreciated :)
 # ROS support is still early work in progress.
+As in, it builds, and can be launched but no further promises currently...
 
 # [WIP] A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
 
