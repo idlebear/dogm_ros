@@ -10,7 +10,7 @@ As in, it builds, and can be launched but no further promises currently...
 
 A ROS(v1) wrapper for the [Dynamic Occupancy Grid](https://github.com/idlebear/dynamic-occupancy-grid-map), which implements [A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application](https://arxiv.org/abs/1605.02406).  
 
-Initially targetting integration with the [CARLA](https://github.com/carla-simulator/) simulation environment.
+Initially targetting integration with the [CARLA](https://github.com/carla-simulator/) simulation environment.  Built using Ubuntu 18.04 (bionic) and [ROS Melodic](http://wiki.ros.org/melodic).
 
 ## References
 
