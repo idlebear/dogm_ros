@@ -1,7 +1,7 @@
+/*
 MIT License
 
 Copyright (c) 2019 Michael Kösel
-Copyright (c) 2021 Barry Gilhuly
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,3 +20,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
+#include <ros/ros.h>
+#include <nodelet/nodelet.h>
+#include "dogm_ros/dogm_node.h"
+
+namespace dogm_ros
+{
+
+class DOGMNodelet: public nodelet::Nodelet
+{
+public:
+  DOGMNodelet() {}
+  ~DOGMNodelet() {}
+
+private:
+  virtual void onInit()
+  {
+    dogm_.reset(new dogm_ros::DOGMRos(getNodeHandle(), getPrivateNodeHandle()));
+  }
+
+  boost::shared_ptr<dogm_ros::DOGMRos> dogm_;
+};
+
+} // namespace dogm_ros
+
+//PLUGINLIB_EXPORT_CLASS(dogm_ros::DOGMNodelet, nodelet::Nodelet);

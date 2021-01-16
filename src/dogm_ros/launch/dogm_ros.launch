@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="cloud_source" default="/carla/ego_vehicle/lidar/lidar1/point_cloud" />
+    <arg name="laser_topic" default="/carla/ego_vehicle/scan"/>
+    <arg name="odometry_topic" default="/carla/ego_vehicle/odometry"/>
+    <arg name="dogm_topic" default="/dynamic_grid_map"/>
+    <arg name="map_size" default="1000.0"/>
+    <arg name="map_resolution" default="1.0"/>
+
+    <arg name="particle_count" default="5000"/>
+    <arg name="particle_new_born_count" default="1000"/>
+    <arg name="particle_persistence_probability" default="0.99"/>
+    <arg name="particle_process_noise_position" default="0.1"/>
+    <arg name="particle_process_noise_velocity" default="1.0"/>
+    <arg name="particle_birth_probability" default="0.2"/>
+    <arg name="particle_velocity_persistent" default="10.0"/>
+    <arg name="particle_velocity_birth" default="10.0"/>
+
+    <arg name="laser_fov" default="360.0"/>
+    <arg name="laser_max_range" default="50.0"/>
+
+    <!-- Launch pointcloud to scan conversion -->
+    <include file="$(find dogm_ros)/launch/pointcloud_to_laserscan.launch">
+        <arg name="input" value="$(arg cloud_source)"/>
+        <arg name="output" value="$(arg laser_topic)"/>
+    </include>
+
+    <!-- Launch the map node -->
+    <node name="dogm_ros_node" pkg="dogm_ros" type="dogm_ros_node" respawn="false" output="screen">
+        <param name="subscribe/laser_topic" value="$(arg laser_topic)"/>
+        <param name="subscribe/odometry_topic" value="$(arg odometry_topic)"/>
+        <param name="publish/dogm_topic" value="$(arg dogm_topic)"/>
+        <param name="map/size" value="$(arg map_size)"/>
+        <param name="map/resolution" value="$(arg map_resolution)"/>
+        <param name="particles/particle_count" value="$(arg particle_count)"/>
+        <param name="particles/new_born_particle_count" value="$(arg particle_new_born_count)"/>
+        <param name="particles/persistence_probability" value="$(arg particle_persistence_probability)"/>
+        <param name="particles/process_noise_position" value="$(arg particle_process_noise_position)"/>
+        <param name="particles/process_noise_velocity" value="$(arg particle_process_noise_velocity)"/>
+        <param name="particles/birth_probability" value="$(arg particle_birth_probability)"/>
+        <param name="particles/velocity_persistent" value="$(arg particle_velocity_persistent)"/>
+        <param name="particles/velocity_birth" value="$(arg particle_velocity_birth)"/>
+        <param name="laser/fov" value="$(arg laser_fov)"/>
+        <param name="laser/max_range" value="$(arg laser_max_range)"/>
+    </node>
+
+
+</launch>

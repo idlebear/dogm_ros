@@ -1,7 +1,7 @@
+/*
 MIT License
 
 Copyright (c) 2019 Michael Kösel
-Copyright (c) 2021 Barry Gilhuly
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,3 +20,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
+#include <ros/ros.h>
+#include "dogm_ros/dogm_node.h"
+
+int main(int argc, char** argv)
+{
+	ros::init(argc, argv, "dogm_node");
+	dogm_ros::DOGMRos dogm(ros::NodeHandle(), ros::NodeHandle("~"));
+	ros::spin();
+
+	return 0;
+}
