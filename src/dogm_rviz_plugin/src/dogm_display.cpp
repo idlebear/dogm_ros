@@ -136,6 +136,20 @@ void DOGMDisplay::reset()
   clear();
 }
 
+// TODO: Placeholder function until properly implemented
+void DOGMDisplay::update(float wall_dt, float ros_dt)
+{
+  MFDClass::update(wall_dt, ros_dt);
+  clear();
+}
+
+// TODO: Placeholder function until properly implemented
+void DOGMDisplay::updateTopic()
+{
+  MFDClass::updateTopic();
+  clear();
+}
+
 void DOGMDisplay::updateAlpha()
 {
   float alpha = alpha_property_->getFloat();

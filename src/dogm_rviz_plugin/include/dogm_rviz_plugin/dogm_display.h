@@ -35,7 +35,11 @@
 #include <rviz/message_filter_display.h>
 #endif
 
-namespace Ogre 
+#include "OgreTexture.h"
+#include "OgreRenderTexture.h"
+#include "OgreHardwarePixelBuffer.h"
+
+namespace Ogre
 {
 class SceneNode;
 }
