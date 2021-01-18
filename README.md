@@ -4,7 +4,13 @@
 
 This repository is still WIP and in a pretty early stage. Contributions are kindly appreciated :)
 # ROS support is still early work in progress.
-As in, it builds, and can be launched but no further promises currently...
+
+The ROS build is function and is capable of publishing both a regular nav_msgs/OccupancyGrid message and a custom one that includes velocity information.
+
+<p align="center">
+  <img src="./docs/dynamic-occupancy.gif">
+</p>
+
 
 # [WIP] A Random Finite Set Approach for Dynamic Occupancy Grid Maps with Real-Time Application
 
