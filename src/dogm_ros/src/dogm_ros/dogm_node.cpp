@@ -41,10 +41,12 @@ DOGMRos::DOGMRos(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
 	std::string subscribe_laser_topic;
 	private_nh_.param("subscribe/laser_topic", subscribe_laser_topic, std::string("/carla/ego_vehicle/scan"));
 	std::string subscribe_odometry_topic;
-    private_nh_.param("subscribe/odometry_topic", subscribe_odometry_topic, std::string("/odometry"));
+    private_nh_.param("subscribe/odometry_topic", subscribe_odometry_topic, std::string("/carla/ego_vehicle/odometry"));
 
-    std::string publish_topic;
-	private_nh_.param("publish/dogm_topic", publish_topic, std::string("/dogm/map"));
+    std::string publish_dogm_topic;
+	private_nh_.param("publish/dogm_topic", publish_dogm_topic, std::string("/dogm/map"));
+    std::string publish_occ_topic;
+    private_nh_.param("publish/occ_topic", publish_occ_topic, std::string("/dogm/occ"));
 
 	private_nh_.param("map/size", params_.size, 50.0f);
 	private_nh_.param("map/resolution", params_.resolution, 0.1f);
@@ -70,7 +72,8 @@ DOGMRos::DOGMRos(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
 	
 	subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processLaserScan, this);
     subscriber_odometry_ = nh_.subscribe(subscribe_odometry_topic, 1, &DOGMRos::processOdometry, this);
-	publisher_ = nh_.advertise<dogm_msgs::DynamicOccupancyGrid>(publish_topic, 1);
+	// publisher_dogm_ = nh_.advertise<dogm_msgs::DynamicOccupancyGrid>(publish_dogm_topic, 1);
+    publisher_occ_ = nh_.advertise<nav_msgs::OccupancyGrid>(publish_occ_topic, 1);
 }
 
 void DOGMRos::processLaserScan(const sensor_msgs::LaserScan::ConstPtr& scan)
@@ -91,11 +94,14 @@ void DOGMRos::processLaserScan(const sensor_msgs::LaserScan::ConstPtr& scan)
 		is_first_measurement_ = false;
 	}
 
-	dogm_msgs::DynamicOccupancyGrid message;
-    dogm_ros::DOGMRosConverter::toDOGMMessage(*grid_map_, message);
+//    dogm_msgs::DynamicOccupancyGrid message;
+//    dogm_ros::DOGMRosConverter::toDOGMMessage(*grid_map_, message);
+//    publisher_dogm_.publish(message);
+    nav_msgs::OccupancyGrid message;
+    dogm_ros::DOGMRosConverter::toOccupancyGridMessage(*grid_map_, message);
+    publisher_occ_.publish(message);
 
-	publisher_.publish(message);
-	
+
 	last_time_stamp_ = time_stamp;
 }
 

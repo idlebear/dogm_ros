@@ -51,7 +51,8 @@ private:
 
 	ros::Subscriber subscriber_laser_;
     ros::Subscriber subscriber_odometry_;
-	ros::Publisher publisher_;
+	ros::Publisher publisher_dogm_;
+    ros::Publisher publisher_occ_;
 
 	dogm::DOGM::Params params_;
 	dogm::LaserMeasurementGrid::Params laser_params_;

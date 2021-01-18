@@ -28,10 +28,12 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicO
   message.data.clear();
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());
 
+  const auto grid_cells = dogm.getGridCells();
+
   #pragma omp parallel for
   for (int i = 0; i < message.data.size(); i++)
   {
-    const dogm::GridCell& cell = dogm.grid_cell_array[i];
+    auto cell = grid_cells[i];
 
     message.data[i].free_mass = cell.free_mass;
     message.data[i].occ_mass = cell.occ_mass;
@@ -65,10 +67,12 @@ void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::
   message.data.clear();
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());
 
+  const auto grid_cells = dogm.getGridCells();
+
   #pragma omp parallel for
   for (int i = 0; i < message.data.size(); i++)
   {
-    dogm::GridCell& cell = dogm.grid_cell_array[i];
+    auto cell = grid_cells[i];
     float free_mass = cell.free_mass;
     float occ_mass = cell.occ_mass;
     
@@ -84,5 +88,7 @@ void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::
     } 
   }
 }
+
+
 
 } /* namespace dogm_ros */

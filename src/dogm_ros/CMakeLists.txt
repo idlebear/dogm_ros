@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(dogm_ros)
+project(dogm_ros LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
 # set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -94,6 +94,6 @@ install(
 #  FILES_MATCHING PATTERN "*.h"
 #)
 
-install(DIRECTORY launch 
+install(DIRECTORY launch
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
         )
