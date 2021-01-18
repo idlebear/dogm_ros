@@ -5,7 +5,7 @@
 This repository is still WIP and in a pretty early stage. Contributions are kindly appreciated :)
 # ROS support is still early work in progress.
 
-The ROS build is function and is capable of publishing both a regular nav_msgs/OccupancyGrid message and a custom one that includes velocity information.
+The ROS build is functional, currently publishing both a regular nav_msgs/OccupancyGrid message and a custom one that includes velocity information.   A visualization in RViz is underway.
 
 <p align="center">
   <img src="./docs/dynamic-occupancy.gif">
