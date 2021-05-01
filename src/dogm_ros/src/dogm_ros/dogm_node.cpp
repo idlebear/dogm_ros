@@ -39,7 +39,8 @@ DOGMRos::DOGMRos(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
 	: nh_(nh), private_nh_(private_nh), grid_map_(nullptr)
 {
 	std::string subscribe_laser_topic;
-	private_nh_.param("subscribe/laser_topic", subscribe_laser_topic, std::string("/carla/ego_vehicle/lidar"));
+    private_nh_.param("subscribe/laser_topic", subscribe_laser_topic, std::string("/carla/ego_vehicle/lidar"));
+//    private_nh_.param("subscribe/laser_topic", subscribe_laser_topic, std::string("/carla/ego_vehicle/scan"));
 	std::string subscribe_odometry_topic;
     private_nh_.param("subscribe/odometry_topic", subscribe_odometry_topic, std::string("/carla/ego_vehicle/odometry"));
 
@@ -49,7 +50,7 @@ DOGMRos::DOGMRos(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
     private_nh_.param("publish/occ_topic", publish_occ_topic, std::string("/dogm/occ"));
 
     private_nh_.param("lidar_increment", lidar_increment, 0.0087f);
-    private_nh_.param("lidar_min_height", lidar_min_height, 0.2f);
+    private_nh_.param("lidar_min_height", lidar_min_height, -1.5f);
     private_nh_.param("lidar_max_height", lidar_max_height, 2.0f);
 
     private_nh_.param("map/size", params_.size, 100.0f);
@@ -75,6 +76,7 @@ DOGMRos::DOGMRos(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
 	is_first_measurement_ = true;
 	
 	subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processPointCloud, this);
+//    subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processLaserScan, this);
     subscriber_odometry_ = nh_.subscribe(subscribe_odometry_topic, 1, &DOGMRos::processOdometry, this);
     publisher_dogm_ = nh_.advertise<dogm_msgs::DynamicOccupancyGrid>(publish_dogm_topic, 1);
     publisher_occ_ = nh_.advertise<nav_msgs::OccupancyGrid>(publish_occ_topic, 1);
@@ -140,8 +142,6 @@ void DOGMRos::processLaserScan(const sensor_msgs::LaserScan::ConstPtr& scan) {
 }
 
 void DOGMRos::processSensorScanData( double time_stamp, const std::vector<float>& data ) {
-	auto len = int(data.size() / 4);
-
     auto cell_data = laser_conv_->generateGrid(data);
     grid_map_->addMeasurementGrid(cell_data, true);
 
@@ -178,8 +178,6 @@ void DOGMRos::processOdometry(const nav_msgs::Odometry::ConstPtr& odom_msg)
     auto mat = tf::Matrix3x3(q);
     double roll, pitch, yaw;
     mat.getRPY( roll, pitch, yaw );
-
-    yaw = 0.0;
 
     grid_map_->updatePose( odom_msg->pose.pose.position.x, odom_msg->pose.pose.position.y, yaw );
 
