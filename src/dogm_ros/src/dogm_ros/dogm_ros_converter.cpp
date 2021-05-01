@@ -14,6 +14,8 @@ DOGMRosConverter::~DOGMRosConverter()
 void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicOccupancyGrid& message)
 {
   message.header.stamp = ros::Time::now();
+  message.header.frame_id = "map";
+
   message.info.resolution = dogm.getResolution();
   message.info.length = dogm.getGridSize() * dogm.getResolution();
   message.info.size = dogm.getGridSize();
@@ -49,13 +51,14 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicO
 void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::OccupancyGrid& message)
 {
   message.header.stamp = ros::Time::now();
+  message.header.frame_id = "map";
   message.info.map_load_time = message.header.stamp;
   message.info.resolution = dogm.getResolution();
   message.info.width = dogm.getGridSize();
   message.info.height = dogm.getGridSize();
  
-  float positionX = dogm.getPositionX() - 0.5 * dogm.getGridSize();
-  float positionY = dogm.getPositionY() - 0.5 * dogm.getGridSize();
+  float positionX = 0; // dogm.getPositionX() - 0.5 * dogm.getGridSize();
+  float positionY = 0; // dogm.getPositionY() - 0.5 * dogm.getGridSize();
   message.info.origin.position.x = positionX;
   message.info.origin.position.y = positionY;
   message.info.origin.position.z = 0.0;

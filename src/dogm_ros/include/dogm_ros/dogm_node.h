@@ -25,7 +25,9 @@ SOFTWARE.
 
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <nav_msgs/Odometry.h>
+#include <tf/tf.h>
 #include <dogm/dogm.h>
 #include <dogm/dogm_types.h>
 #include <dogm/mapping/laser_to_meas_grid.h>
@@ -43,7 +45,12 @@ public:
 	virtual ~DOGMRos() = default;
 	
 	void processLaserScan(const sensor_msgs::LaserScan::ConstPtr& scan);
+    void processPointCloud(const sensor_msgs::PointCloud2::ConstPtr& scan);
     void processOdometry(const nav_msgs::Odometry::ConstPtr& odom_msg);
+
+protected:
+    void processSensorScanData(double time_stamp, const std::vector<float>& data);
+
 
 private:
 	ros::NodeHandle nh_;
@@ -62,6 +69,11 @@ private:
 
 	std::unique_ptr<dogm::LaserMeasurementGrid> laser_conv_;
     std::unique_ptr<dogm::DOGM> grid_map_;
+
+    float lidar_increment;
+    float lidar_min_height;
+    float lidar_max_height;
+
 };
 
 } // namespace dogm_ros
