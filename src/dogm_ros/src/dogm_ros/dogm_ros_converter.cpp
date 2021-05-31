@@ -1,26 +1,23 @@
 #include "dogm_ros/dogm_ros_converter.h"
 
-namespace dogm_ros
-{
+namespace dogm_ros {
 
-DOGMRosConverter::DOGMRosConverter()
-{
-}
-
-DOGMRosConverter::~DOGMRosConverter()
-{
-}
-
-void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicOccupancyGrid& message)
-{
+void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
+                                     dogm_msgs::DynamicOccupancyGrid &message) {
   message.header.stamp = ros::Time::now();
   message.header.frame_id = "map";
 
   message.info.resolution = dogm.getResolution();
-  message.info.length = dogm.getGridSize() * dogm.getResolution();
+  message.info.length = float(dogm.getGridSize()) * dogm.getResolution();
   message.info.size = dogm.getGridSize();
-  message.info.pose.position.x = dogm.getPositionX();
-  message.info.pose.position.y = dogm.getPositionY();
+
+  float positionX =
+      -dogm.getGridSize() *
+      dogm.getResolution(); // dogm.getPositionX() - 0.5 * dogm.getGridSize();
+  float positionY = 0;      // dogm.getPositionY() - 0.5 * dogm.getGridSize();
+
+  message.info.pose.position.x = positionX;
+  message.info.pose.position.y = positionY;
   message.info.pose.position.z = 0.0;
   message.info.pose.orientation.x = 0.0;
   message.info.pose.orientation.y = 0.0;
@@ -32,9 +29,8 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicO
 
   const auto grid_cells = dogm.getGridCells();
 
-  #pragma omp parallel for
-  for (int i = 0; i < message.data.size(); i++)
-  {
+#pragma omp parallel for
+  for (int i = 0; i < message.data.size(); i++) {
     auto cell = grid_cells[i];
 
     message.data[i].free_mass = cell.free_mass;
@@ -48,15 +44,15 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicO
   }
 }
 
-void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::OccupancyGrid& message)
-{
+void DOGMRosConverter::toOccupancyGridMessage(
+    const dogm::DOGM &dogm, nav_msgs::OccupancyGrid &message) {
   message.header.stamp = ros::Time::now();
   message.header.frame_id = "map";
   message.info.map_load_time = message.header.stamp;
   message.info.resolution = dogm.getResolution();
   message.info.width = dogm.getGridSize();
   message.info.height = dogm.getGridSize();
- 
+
   float positionX = 0; // dogm.getPositionX() - 0.5 * dogm.getGridSize();
   float positionY = 0; // dogm.getPositionY() - 0.5 * dogm.getGridSize();
   message.info.origin.position.x = positionX;
@@ -72,26 +68,20 @@ void DOGMRosConverter::toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::
 
   const auto grid_cells = dogm.getGridCells();
 
-  #pragma omp parallel for
-  for (int i = 0; i < message.data.size(); i++)
-  {
+#pragma omp parallel for
+  for (int i = 0; i < message.data.size(); i++) {
     auto cell = grid_cells[i];
     float free_mass = cell.free_mass;
     float occ_mass = cell.occ_mass;
-    
+
     float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
 
-    if (prob == 0.5f)
-    {
-        message.data[i] = -1;
+    if (prob == 0.5f) {
+      message.data[i] = -1;
+    } else {
+      message.data[i] = static_cast<char>(prob * 100.0f);
     }
-    else
-    {      
-        message.data[i] = static_cast<int>(prob * 100.0f);
-    } 
   }
 }
-
-
 
 } /* namespace dogm_ros */

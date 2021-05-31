@@ -21,14 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include <ros/ros.h>
 #include "dogm_ros/dogm_node.h"
+#include <ros/ros.h>
 
-int main(int argc, char** argv)
-{
-	ros::init(argc, argv, "dogm_node");
-	dogm_ros::DOGMRos dogm(ros::NodeHandle(), ros::NodeHandle("~"));
-	ros::spin();
+int main(int argc, char **argv) {
+  ros::init(argc, argv, "dogm_node");
+  dogm_ros::DOGMRos dogm(ros::NodeHandle(), ros::NodeHandle("~"));
+  ros::spin();
 
-	return 0;
+  return 0;
 }

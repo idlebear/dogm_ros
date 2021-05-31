@@ -4,23 +4,21 @@
 #include <dogm/dogm_types.h>
 #include <dogm_msgs/DynamicOccupancyGrid.h>
 
-#include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <ros/ros.h>
 
-namespace dogm_ros
-{
+namespace dogm_ros {
 
-class DOGMRosConverter
-{
+class DOGMRosConverter {
 public:
- 
-  DOGMRosConverter();
+  DOGMRosConverter() = default;
+  virtual ~DOGMRosConverter() = default;
 
-  virtual ~DOGMRosConverter();
+  static void toDOGMMessage(const dogm::DOGM &dogm,
+                            dogm_msgs::DynamicOccupancyGrid &message);
 
-  static void toDOGMMessage(const dogm::DOGM& dogm, dogm_msgs::DynamicOccupancyGrid& message);
-
-  static void toOccupancyGridMessage(const dogm::DOGM& dogm, nav_msgs::OccupancyGrid& message);
+  static void toOccupancyGridMessage(const dogm::DOGM &dogm,
+                                     nav_msgs::OccupancyGrid &message);
 };
 
 } /* namespace dogm_ros */
