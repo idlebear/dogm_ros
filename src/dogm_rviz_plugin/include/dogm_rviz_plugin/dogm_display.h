@@ -1,6 +1,6 @@
 /*
  * Based on rviz/default_plugin/map_display.cpp
- * 
+ *
  * Copyright (c) 2008, Willow Garage, Inc.
  * All rights reserved.
  *
@@ -35,30 +35,27 @@
 #include <rviz/message_filter_display.h>
 #endif
 
-#include "OgreTexture.h"
-#include "OgreRenderTexture.h"
 #include "OgreHardwarePixelBuffer.h"
+#include "OgreRenderTexture.h"
+#include "OgreTexture.h"
 
-namespace Ogre
-{
+namespace Ogre {
 class SceneNode;
 }
 
-namespace rviz 
-{
+namespace rviz {
 class BoolProperty;
 class FloatProperty;
 class IntProperty;
 class VectorProperty;
 class QuaternionProperty;
-}
+} // namespace rviz
 
-namespace dogm_rviz_plugin 
-{
+namespace dogm_rviz_plugin {
 
-class DOGMDisplay : public rviz::MessageFilterDisplay<dogm_msgs::DynamicOccupancyGrid>
-{
-Q_OBJECT
+class DOGMDisplay
+    : public rviz::MessageFilterDisplay<dogm_msgs::DynamicOccupancyGrid> {
+  Q_OBJECT
 
 public:
   DOGMDisplay();
@@ -67,7 +64,7 @@ public:
   virtual void onInitialize();
   virtual void fixedFrameChanged();
   virtual void reset();
-  virtual void update( float wall_dt, float ros_dt );
+  virtual void update(float wall_dt, float ros_dt);
 
   float getResolution() { return resolution_; }
   int getSize() { return size_; }
@@ -79,14 +76,19 @@ protected Q_SLOTS:
 
 protected:
   virtual void onDisable();
+  virtual void onEnable();
 
-  virtual void processMessage(const dogm_msgs::DynamicOccupancyGrid::ConstPtr& msg);
+  virtual void
+  processMessage(const dogm_msgs::DynamicOccupancyGrid::ConstPtr &msg);
 
   void clear();
 
+  void subscribe();
+  void unsubscribe();
+
   void transformMap();
 
-  Ogre::ManualObject* manual_object_;
+  Ogre::ManualObject *manual_object_;
   Ogre::TexturePtr texture_;
   Ogre::MaterialPtr material_;
   bool loaded_;
@@ -96,15 +98,18 @@ protected:
   std::string frame_;
   geometry_msgs::Pose latest_map_pose_;
 
-  rviz::FloatProperty* occ_property_;
-  rviz::FloatProperty* mahalanobis_property_;
+  rviz::FloatProperty *occ_property_;
+  rviz::FloatProperty *mahalanobis_property_;
 
-  rviz::FloatProperty* resolution_property_;
-  rviz::IntProperty* size_property_;
-  rviz::VectorProperty* position_property_;
-  rviz::QuaternionProperty* orientation_property_;
-  rviz::FloatProperty* alpha_property_;
-  rviz::BoolProperty* draw_under_property_;
+  ros::Subscriber map_sub_;
+
+  rviz::RosTopicProperty *topic_property_;
+  rviz::FloatProperty *resolution_property_;
+  rviz::IntProperty *size_property_;
+  rviz::VectorProperty *position_property_;
+  rviz::QuaternionProperty *orientation_property_;
+  rviz::FloatProperty *alpha_property_;
+  rviz::BoolProperty *draw_under_property_;
 };
 
-}  // end namespace dogm_rviz_plugin
+} // end namespace dogm_rviz_plugin
