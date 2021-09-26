@@ -1,28 +1,42 @@
+#include <tf2/LinearMath/Quaternion.h>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <limits>
+
 #include "dogm_ros/dogm_ros_converter.h"
 
 namespace dogm_ros {
 
+  static int seq = 1000;
+  static float last_x = 0, last_y = 0, last_yaw = std::numeric_limits<float>::infinity();
+
 void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
                                      dogm_msgs::DynamicOccupancyGrid &message) {
   message.header.stamp = ros::Time::now();
+  // TODO:  should be publishing the map in the car's reference frame
   message.header.frame_id = "map";
 
   message.info.resolution = dogm.getResolution();
   message.info.length = float(dogm.getGridSize()) * dogm.getResolution();
   message.info.size = dogm.getGridSize();
 
-  float positionX =
-      -dogm.getGridSize() *
-      dogm.getResolution(); // dogm.getPositionX() - 0.5 * dogm.getGridSize();
-  float positionY = 0;      // dogm.getPositionY() - 0.5 * dogm.getGridSize();
-
-  message.info.pose.position.x = positionX;
-  message.info.pose.position.y = positionY;
+  message.info.pose.position.x = 0;
+  message.info.pose.position.y = 0;
+  //  message.info.pose.position.x = dogm.getPositionX();
+  //  message.info.pose.position.y = dogm.getPositionY();
   message.info.pose.position.z = 0.0;
-  message.info.pose.orientation.x = 0.0;
-  message.info.pose.orientation.y = 0.0;
-  message.info.pose.orientation.z = 0.0;
-  message.info.pose.orientation.w = 1.0;
+
+  tf2::Quaternion q;
+  //  q.setRPY( 0, 0, dogm.getYaw() );
+  //  message.info.pose.orientation.x = q.x();
+  //  message.info.pose.orientation.y = q.y();
+  //  message.info.pose.orientation.z = q.z();
+  //  message.info.pose.orientation.w = q.w();
+  message.info.pose.orientation.x = 0;
+  message.info.pose.orientation.y = 0;
+  message.info.pose.orientation.z = 0;
+  message.info.pose.orientation.w = 1;
 
   message.data.clear();
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());
@@ -46,6 +60,11 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
 
 void DOGMRosConverter::toOccupancyGridMessage(
     const dogm::DOGM &dogm, nav_msgs::OccupancyGrid &message) {
+
+  auto x = dogm.getPositionX();
+  auto y = dogm.getPositionY();
+  auto yaw = dogm.getYaw();
+
   message.header.stamp = ros::Time::now();
   message.header.frame_id = "map";
   message.info.map_load_time = message.header.stamp;
@@ -53,15 +72,23 @@ void DOGMRosConverter::toOccupancyGridMessage(
   message.info.width = dogm.getGridSize();
   message.info.height = dogm.getGridSize();
 
-  float positionX = 0; // dogm.getPositionX() - 0.5 * dogm.getGridSize();
-  float positionY = 0; // dogm.getPositionY() - 0.5 * dogm.getGridSize();
-  message.info.origin.position.x = positionX;
-  message.info.origin.position.y = positionY;
+   message.info.origin.position.x = 0;
+   message.info.origin.position.y = 0;
+  //  message.info.origin.position.x = x;
+  //  message.info.origin.position.y = y;
   message.info.origin.position.z = 0.0;
-  message.info.origin.orientation.x = 0.0;
-  message.info.origin.orientation.y = 0.0;
-  message.info.origin.orientation.z = 0.0;
-  message.info.origin.orientation.w = 1.0;
+
+  tf2::Quaternion q;
+  //  q.setRPY( 0, 0, yaw );
+  //  message.info.origin.orientation.x = q.x();
+  //  message.info.origin.orientation.y = q.y();
+  //  message.info.origin.orientation.z = q.z();
+  //  message.info.origin.orientation.w = q.w();
+  message.info.origin.orientation.x = 0;
+  message.info.origin.orientation.y = 0;
+  message.info.origin.orientation.z = 0;
+  message.info.origin.orientation.w = 1;
+
 
   message.data.clear();
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());

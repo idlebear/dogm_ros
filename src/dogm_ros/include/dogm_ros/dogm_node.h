@@ -68,6 +68,10 @@ private:
   float lidar_increment;
   float lidar_min_height;
   float lidar_max_height;
+
+  float pos_x;
+  float pos_y;
+  float yaw;
 };
 
 } // namespace dogm_ros

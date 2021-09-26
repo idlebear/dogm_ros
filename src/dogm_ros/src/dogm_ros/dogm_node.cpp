@@ -35,6 +35,7 @@ namespace dogm_ros {
 DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
     : nh_(nh), private_nh_(private_nh), grid_map_(nullptr) {
   std::string subscribe_laser_topic;
+
   //    private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
   //    std::string("/carla/ego_vehicle/lidar"));
   private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
@@ -55,7 +56,7 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
   private_nh_.param("lidar_max_height", lidar_max_height, 2.0f);
 
   private_nh_.param("map/size", params_.size, 100.0f);
-  private_nh_.param("map/resolution", params_.resolution, 0.1f);
+  private_nh_.param("map/resolution", params_.resolution, 1.0f);
   private_nh_.param("particles/particle_count", params_.particle_count, 20000);
   private_nh_.param("particles/new_born_particle_count",
                     params_.new_born_particle_count, 2000);
@@ -71,7 +72,6 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
   private_nh_.param("particles/velocity_birth", params_.init_max_velocity,
                     12.0f);
 
-  // private_nh_.param("laser/fov", laser_params_.fov, 360.0f);
   private_nh_.param("laser/fov", laser_params_.fov, 360.0f);
   private_nh_.param("laser/max_range", laser_params_.max_range, 50.0f);
 
@@ -98,7 +98,13 @@ void DOGMRos::processPointCloud(
     const sensor_msgs::PointCloud2::ConstPtr &cloud) {
   double time_stamp = cloud->header.stamp.toSec();
 
-  // TODO -- eventually make this a tad more general...
+  // TODO: this conversion is quick and dirty and is missing
+  //       the transformation from the sensor's frame to the
+  //       car's frame. The ROS node to convert point cloud to
+  //       laser scan is a better choice.    This, however,
+  //       is probably faster...
+
+  // TODO: eventually make this a tad more general...
   const int POINT_SIZE = 4;
   assert(cloud->is_bigendian == false && cloud->point_step == 4 * POINT_SIZE);
 
@@ -156,14 +162,18 @@ void DOGMRos::processLaserScan(const sensor_msgs::LaserScan::ConstPtr &scan) {
 
 void DOGMRos::processSensorScanData(float time_stamp,
                                     const std::vector<float> &data) {
+
+  if (yaw == std::numeric_limits<float>::quiet_NaN()) {
+    return;
+  }
+
   auto cell_data = laser_conv_->generateGrid(data);
-  grid_map_->addMeasurementGrid(cell_data, true);
 
   if (!is_first_measurement_) {
     float dt = time_stamp - last_time_stamp_;
-    grid_map_->updateGrid(dt);
+    grid_map_->updateGrid( cell_data, pos_x, pos_y, yaw, dt, true );
   } else {
-    grid_map_->updateGrid(0.0f);
+    grid_map_->updateGrid( cell_data, pos_x, pos_y, yaw, 0.0, true );
     is_first_measurement_ = false;
   }
 
@@ -171,9 +181,9 @@ void DOGMRos::processSensorScanData(float time_stamp,
   dogm_ros::DOGMRosConverter::toDOGMMessage(*grid_map_, dogma_msg);
   publisher_dogm_.publish(dogma_msg);
 
-  nav_msgs::OccupancyGrid message;
-  dogm_ros::DOGMRosConverter::toOccupancyGridMessage(*grid_map_, message);
-  publisher_occ_.publish(message);
+//  nav_msgs::OccupancyGrid message;
+//  dogm_ros::DOGMRosConverter::toOccupancyGridMessage(*grid_map_, message);
+//  publisher_occ_.publish(message);
 
   last_time_stamp_ = time_stamp;
 }
@@ -190,13 +200,13 @@ void DOGMRos::processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg) {
   double roll, pitch, yaw;
   mat.getRPY(roll, pitch, yaw);
 
-  grid_map_->updatePose(float(odom_msg->pose.pose.position.x),
-                        float(odom_msg->pose.pose.position.y), float(yaw));
+  pos_x = odom_msg->pose.pose.position.x;
+  pos_x = odom_msg->pose.pose.position.y;
+  yaw = yaw;
 
   // TODO: Need to make sure the pose information is in sync with the the laser
-  // scan updates so
-  //       the map is properly generated.  May also want to update the dogma to
-  //       properly track the complete pose information
+  //       scan updates so the map is properly generated.  May also want to
+  //       update the dogma to properly track the complete pose information
 }
 
 } // namespace dogm_ros

@@ -55,7 +55,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/dogm_ros/dogm_ros_converter.cpp
   src/dogm_ros/dogm_node.cpp
-)
+        include/dogm_ros/bitmap.h)
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -71,9 +71,15 @@ add_library(${PROJECT_NAME}_nodelet src/dogm_ros_nodelet.cpp)
 target_link_libraries(${PROJECT_NAME}_nodelet ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
 
 ### Declare a C++ executable
-add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp)
+add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp
+        src/dogm_ros/dogm_ros_converter.cpp
+        src/dogm_ros/dogm_node.cpp
+        include/dogm_ros/bitmap.h
+)
+
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+# target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##
