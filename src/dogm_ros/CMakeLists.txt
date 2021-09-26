@@ -74,7 +74,6 @@ target_link_libraries(${PROJECT_NAME}_nodelet ${PROJECT_NAME} ${DOGM_LIBRARIES} 
 add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp
         src/dogm_ros/dogm_ros_converter.cpp
         src/dogm_ros/dogm_node.cpp
-        include/dogm_ros/bitmap.h
 )
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
