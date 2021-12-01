@@ -375,9 +375,8 @@ void DOGMDisplay::processMessage(
         mdist >= mahalanobis_property_->getFloat()) {
       float angle = atan2(cell.mean_y_vel, cell.mean_x_vel) + Ogre::Math::PI;
 
-      auto value =
-          1.0; // std::min(1.0, sqrt(cell.mean_x_vel * cell.mean_x_vel +
-               // cell.mean_y_vel * cell.mean_y_vel) / max_expected_velocity );
+      auto value = std::min(1.0, sqrt(cell.mean_x_vel * cell.mean_x_vel +
+                                      cell.mean_y_vel * cell.mean_y_vel) / max_expected_velocity );
 
       int r, g, b;
       hsvToRGB(angle / Ogre::Math::PI, 1.0f, value, r, g, b);
