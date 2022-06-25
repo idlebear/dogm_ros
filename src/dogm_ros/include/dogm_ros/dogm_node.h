@@ -55,6 +55,7 @@ private:
   ros::Subscriber subscriber_odometry_;
   ros::Publisher publisher_dogm_;
   ros::Publisher publisher_occ_;
+  ros::Publisher publisher_scan;
 
   dogm::DOGM::Params params_;
   dogm::LaserMeasurementGrid::Params laser_params_;
@@ -65,13 +66,12 @@ private:
   std::unique_ptr<dogm::LaserMeasurementGrid> laser_conv_;
   std::unique_ptr<dogm::DOGM> grid_map_;
 
-  float lidar_increment;
   float lidar_min_height;
   float lidar_max_height;
 
   float pos_x;
   float pos_y;
-  float yaw;
+  float pos_yaw;
 };
 
 } // namespace dogm_ros

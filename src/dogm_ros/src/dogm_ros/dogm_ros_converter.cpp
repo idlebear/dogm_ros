@@ -63,7 +63,7 @@ void DOGMRosConverter::toOccupancyGridMessage(
 
   auto x = dogm.getPositionX();
   auto y = dogm.getPositionY();
-  auto yaw = dogm.getYaw();
+  auto yaw = 0; // dogm.getYaw();
 
   message.header.stamp = ros::Time::now();
   message.header.frame_id = "map";
