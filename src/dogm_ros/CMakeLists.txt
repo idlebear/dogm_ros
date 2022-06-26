@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+find_package(OpenCV REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(DOGM REQUIRED)
 
@@ -42,12 +43,13 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-
+ message(${DOGM_INCLUDE_DIRS})
 ## Specify additional locations of header files
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${CUDA_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${DOGM_INCLUDE_DIRS}
 )
 
@@ -60,6 +62,7 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${CUDA_LIBRARIES}
+  ${OpenCV_LIBS}
   ${DOGM_LIBRARIES}
 )
 

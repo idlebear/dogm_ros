@@ -41,74 +41,62 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
   message.data.clear();
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());
 
-  const auto grid_cells = dogm.getGridCells();
+  auto grid_cells = dogm.getGridCells();
 
 #pragma omp parallel for
   for (int i = 0; i < message.data.size(); i++) {
-    auto cell = grid_cells[i];
+    message.data[i].free_mass = grid_cells.free_mass[i];
+    message.data[i].occ_mass = grid_cells.occ_mass[i];
 
-    message.data[i].free_mass = cell.free_mass;
-    message.data[i].occ_mass = cell.occ_mass;
-
-    message.data[i].mean_x_vel = cell.mean_x_vel;
-    message.data[i].mean_y_vel = cell.mean_y_vel;
-    message.data[i].var_x_vel = cell.var_x_vel;
-    message.data[i].var_y_vel = cell.var_y_vel;
-    message.data[i].covar_xy_vel = cell.covar_xy_vel;
+    message.data[i].mean_x_vel = grid_cells.mean_x_vel[i];
+    message.data[i].mean_y_vel = grid_cells.mean_y_vel[i];
+    message.data[i].var_x_vel = grid_cells.var_x_vel[i];
+    message.data[i].var_y_vel = grid_cells.var_y_vel[i];
+    message.data[i].covar_xy_vel = grid_cells.covar_xy_vel[i];
   }
+
+  dogm.freeGridCells(grid_cells);
+
 }
 
 void DOGMRosConverter::toOccupancyGridMessage(
     const dogm::DOGM &dogm, nav_msgs::OccupancyGrid &message) {
 
-  auto x = dogm.getPositionX();
-  auto y = dogm.getPositionY();
-  auto yaw = 0; // dogm.getYaw();
+    message.header.stamp = ros::Time::now();
+    message.header.frame_id = "map";
+    message.info.map_load_time = message.header.stamp;
+    message.info.resolution = dogm.getResolution();
+    message.info.width = dogm.getGridSize();
+    message.info.height = dogm.getGridSize();
 
-  message.header.stamp = ros::Time::now();
-  message.header.frame_id = "map";
-  message.info.map_load_time = message.header.stamp;
-  message.info.resolution = dogm.getResolution();
-  message.info.width = dogm.getGridSize();
-  message.info.height = dogm.getGridSize();
+    message.info.origin.position.x = 0;
+    message.info.origin.position.y = 0;
+    message.info.origin.position.z = 0.0;
 
-   message.info.origin.position.x = 0;
-   message.info.origin.position.y = 0;
-  //  message.info.origin.position.x = x;
-  //  message.info.origin.position.y = y;
-  message.info.origin.position.z = 0.0;
+    message.info.origin.orientation.x = 0;
+    message.info.origin.orientation.y = 0;
+    message.info.origin.orientation.z = 0;
+    message.info.origin.orientation.w = 1;
 
-  tf2::Quaternion q;
-  //  q.setRPY( 0, 0, yaw );
-  //  message.info.origin.orientation.x = q.x();
-  //  message.info.origin.orientation.y = q.y();
-  //  message.info.origin.orientation.z = q.z();
-  //  message.info.origin.orientation.w = q.w();
-  message.info.origin.orientation.x = 0;
-  message.info.origin.orientation.y = 0;
-  message.info.origin.orientation.z = 0;
-  message.info.origin.orientation.w = 1;
+    message.data.clear();
+    message.data.resize(dogm.getGridSize() * dogm.getGridSize());
 
-
-  message.data.clear();
-  message.data.resize(dogm.getGridSize() * dogm.getGridSize());
-
-  const auto grid_cells = dogm.getGridCells();
+    auto grid_cells = dogm.getGridCells();
 
 #pragma omp parallel for
-  for (int i = 0; i < message.data.size(); i++) {
-    auto cell = grid_cells[i];
-    float free_mass = cell.free_mass;
-    float occ_mass = cell.occ_mass;
+    for (int i = 0; i < message.data.size(); i++) {
+        float free_mass = grid_cells.free_mass[i];
+        float occ_mass = grid_cells.occ_mass[i];
 
-    float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
-
-    if (prob == 0.5f) {
-      message.data[i] = -1;
-    } else {
-      message.data[i] = static_cast<char>(prob * 100.0f);
+        float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
+        if (prob == 0.5f) {
+            message.data[i] = -1;
+        } else {
+            message.data[i] = static_cast<char>(prob * 100.0f);
+        }
     }
-  }
+
+    dogm.freeGridCells(grid_cells);
 }
 
 } /* namespace dogm_ros */
