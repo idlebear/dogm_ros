@@ -4,6 +4,8 @@
 #include <iomanip>
 #include <limits>
 
+#include <chrono>
+
 #include "dogm_ros/dogm_ros_converter.h"
 
 namespace dogm_ros {

@@ -60,7 +60,7 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
   private_nh_.param("lidar_max_height", lidar_max_height, 3.0f);
 
   private_nh_.param("map/size", params_.size, 100.0f);
-  private_nh_.param("map/resolution", params_.resolution, 0.25f);
+  private_nh_.param("map/resolution", params_.resolution, 0.5f);
   private_nh_.param("particles/particle_count", params_.particle_count, 20000);
   private_nh_.param("particles/new_born_particle_count",
                     params_.new_born_particle_count, 2000);
@@ -82,7 +82,7 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
   private_nh_.param("laser/max_range", laser_params_.max_range, 50.0f);
 
   // TODO: laser resolution is currently assumed to be the same as the map
-  laser_params_.resolution = 0.1;
+  laser_params_.resolution = 0.2;
   laser_conv_ = std::make_unique<dogm::LaserMeasurementGrid>(
       laser_params_, params_.size, params_.resolution);
   grid_map_ = std::make_unique<dogm::DOGM>(params_);
@@ -181,6 +181,8 @@ void DOGMRos::processLaserScan(const sensor_msgs::LaserScan::ConstPtr &scan) {
 void DOGMRos::processSensorScanData(float time_stamp,
                                     const std::vector<float> &data) {
 
+  auto start = std::chrono::high_resolution_clock::now();
+
   if (pos_yaw == std::numeric_limits<float>::quiet_NaN()) {
     return;
   }
@@ -189,9 +191,9 @@ void DOGMRos::processSensorScanData(float time_stamp,
 
     if (!is_first_measurement_) {
         float dt = time_stamp - last_time_stamp_;
-        grid_map_->updateGrid( cell_data, pos_x, pos_y, pos_yaw, dt );
+        grid_map_->updateGrid( cell_data, pos_x, pos_y, dt );
     } else {
-        grid_map_->updateGrid( cell_data, pos_x, pos_y, pos_yaw, 0.0 );
+        grid_map_->updateGrid( cell_data, pos_x, pos_y, 0.0 );
         is_first_measurement_ = false;
     }
 
@@ -204,6 +206,10 @@ void DOGMRos::processSensorScanData(float time_stamp,
     publisher_occ_.publish(message);
 
     last_time_stamp_ = time_stamp;
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << duration.count() << std::endl;
 }
 
 void DOGMRos::processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg) {
