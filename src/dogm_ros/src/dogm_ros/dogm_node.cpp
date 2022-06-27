@@ -206,10 +206,9 @@ void DOGMRos::processSensorScanData(float time_stamp,
     publisher_occ_.publish(message);
 
     last_time_stamp_ = time_stamp;
-
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    std::cout << duration.count() << std::endl;
+    //    std::cout << duration.count() << std::endl;
 }
 
 void DOGMRos::processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg) {
