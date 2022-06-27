@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+find_package(OpenCV REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(DOGM REQUIRED)
 
@@ -42,12 +43,13 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-
+ message(${DOGM_INCLUDE_DIRS})
 ## Specify additional locations of header files
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${CUDA_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ${DOGM_INCLUDE_DIRS}
 )
 
@@ -60,6 +62,7 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${CUDA_LIBRARIES}
+  ${OpenCV_LIBS}
   ${DOGM_LIBRARIES}
 )
 
@@ -71,9 +74,14 @@ add_library(${PROJECT_NAME}_nodelet src/dogm_ros_nodelet.cpp)
 target_link_libraries(${PROJECT_NAME}_nodelet ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
 
 ### Declare a C++ executable
-add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp)
+add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp
+        src/dogm_ros/dogm_ros_converter.cpp
+        src/dogm_ros/dogm_node.cpp
+)
+
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+# target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
 
 #############
 ## Install ##

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="input" default="/carla/ego_vehicle/lidar/lidar1/point_cloud" />
+    <arg name="input" default="/carla/ego_vehicle/lidar" />
     <arg name="output" default="/carla/ego_vehicle/scan" />
 
     <!-- run pointcloud_to_laserscan node -->

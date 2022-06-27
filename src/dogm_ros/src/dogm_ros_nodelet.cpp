@@ -21,22 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#include <ros/ros.h>
-#include <nodelet/nodelet.h>
 #include "dogm_ros/dogm_node.h"
+#include <nodelet/nodelet.h>
+#include <ros/ros.h>
 
-namespace dogm_ros
-{
+namespace dogm_ros {
 
-class DOGMNodelet: public nodelet::Nodelet
-{
+class DOGMNodelet : public nodelet::Nodelet {
 public:
   DOGMNodelet() {}
   ~DOGMNodelet() {}
 
 private:
-  virtual void onInit()
-  {
+  virtual void onInit() {
     dogm_.reset(new dogm_ros::DOGMRos(getNodeHandle(), getPrivateNodeHandle()));
   }
 
@@ -45,4 +42,4 @@ private:
 
 } // namespace dogm_ros
 
-//PLUGINLIB_EXPORT_CLASS(dogm_ros::DOGMNodelet, nodelet::Nodelet);
+// PLUGINLIB_EXPORT_CLASS(dogm_ros::DOGMNodelet, nodelet::Nodelet);
