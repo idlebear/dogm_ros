@@ -4,9 +4,9 @@
     <arg name="cloud_source" default="/carla/ego_vehicle/lidar/lidar1/point_cloud" />
     <arg name="laser_topic" default="/carla/ego_vehicle/scan"/>
     <arg name="odometry_topic" default="/carla/ego_vehicle/odometry"/>
-    <arg name="dogm_topic" default="/dynamic_grid_map"/>
-    <arg name="map_size" default="1000.0"/>
-    <arg name="map_resolution" default="1.0"/>
+    <arg name="dogm_topic" default="/dogm/dynamic"/>
+    <arg name="map_size" default="100.0"/>
+    <arg name="map_resolution" default="0.2"/>
 
     <arg name="particle_count" default="5000"/>
     <arg name="particle_new_born_count" default="1000"/>
@@ -19,6 +19,7 @@
 
     <arg name="laser_fov" default="360.0"/>
     <arg name="laser_max_range" default="50.0"/>
+    <arg name="angle_increment" default="0.0087"/>
 
     <!-- Launch pointcloud to scan conversion -->
     <include file="$(find dogm_ros)/launch/pointcloud_to_laserscan.launch">
@@ -43,6 +44,7 @@
         <param name="particles/velocity_birth" value="$(arg particle_velocity_birth)"/>
         <param name="laser/fov" value="$(arg laser_fov)"/>
         <param name="laser/max_range" value="$(arg laser_max_range)"/>
+        <param name="laser/angle_increment" value="$(arg angle_increment)"/>
     </node>
 
 

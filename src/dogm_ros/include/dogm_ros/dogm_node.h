@@ -68,6 +68,7 @@ private:
 
   float lidar_min_height;
   float lidar_max_height;
+  float lidar_inc;
 
   float pos_x;
   float pos_y;

@@ -6,6 +6,7 @@
 
 #include <chrono>
 
+#include "dogm_ros/dogm_ros.h"
 #include "dogm_ros/dogm_ros_converter.h"
 
 namespace dogm_ros {
@@ -45,6 +46,7 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
 
   auto grid_cells = dogm.getGridCells();
 
+#if USE_SOA
 #pragma omp parallel for
   for (int i = 0; i < message.data.size(); i++) {
     message.data[i].free_mass = grid_cells.free_mass[i];
@@ -57,8 +59,20 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
     message.data[i].covar_xy_vel = grid_cells.covar_xy_vel[i];
   }
 
-  dogm.freeGridCells(grid_cells);
+    dogm.freeGridCells(grid_cells);
+#else
+#pragma omp parallel for
+  for (int i = 0; i < message.data.size(); i++) {
+    message.data[i].free_mass = grid_cells[i].free_mass;
+    message.data[i].occ_mass = grid_cells[i].occ_mass;
 
+    message.data[i].mean_x_vel = grid_cells[i].mean_x_vel;
+    message.data[i].mean_y_vel = grid_cells[i].mean_y_vel;
+    message.data[i].var_x_vel = grid_cells[i].var_x_vel;
+    message.data[i].var_y_vel = grid_cells[i].var_y_vel;
+    message.data[i].covar_xy_vel = grid_cells[i].covar_xy_vel;
+  }
+#endif
 }
 
 void DOGMRosConverter::toOccupancyGridMessage(
@@ -85,6 +99,7 @@ void DOGMRosConverter::toOccupancyGridMessage(
 
     auto grid_cells = dogm.getGridCells();
 
+#if USE_SOA
 #pragma omp parallel for
     for (int i = 0; i < message.data.size(); i++) {
         float free_mass = grid_cells.free_mass[i];
@@ -99,6 +114,20 @@ void DOGMRosConverter::toOccupancyGridMessage(
     }
 
     dogm.freeGridCells(grid_cells);
+#else
+#pragma omp parallel for
+    for (int i = 0; i < message.data.size(); i++) {
+        float free_mass = grid_cells[i].free_mass;
+        float occ_mass = grid_cells[i].occ_mass;
+
+        float prob = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
+        if (prob == 0.5f) {
+            message.data[i] = -1;
+        } else {
+            message.data[i] = static_cast<char>(prob * 100.0f);
+        }
+    }
+#endif
 }
 
 } /* namespace dogm_ros */

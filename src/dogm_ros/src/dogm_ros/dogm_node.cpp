@@ -32,9 +32,7 @@ SOFTWARE.
 
 namespace dogm_ros {
 
-const float lidar_inc = 0.0087;
-const float lidar_inc_degrees = lidar_inc * 180 / M_PI;
-
+double cumulative_time = 0;
 int map_count = 0;
 
 DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
@@ -43,11 +41,11 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
 
   private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
                     std::string("/scan"));
-//  private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
-//                    std::string("/carla/ego_vehicle/lidar/lidar1/point_cloud"));
+  //  private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
+  //                    std::string("/carla/ego_vehicle/lidar/lidar1/point_cloud"));
   std::string subscribe_odometry_topic;
   private_nh_.param("subscribe/odometry_topic", subscribe_odometry_topic,
-                    std::string("/jackal_velocity_controller/odom"));
+                    std::string("/carla/ego_vehicle/odometry"));
 
   std::string publish_dogm_topic;
   private_nh_.param("publish/dogm_topic", publish_dogm_topic,
@@ -56,14 +54,14 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
   private_nh_.param("publish/occ_topic", publish_occ_topic,
                     std::string("/dogm/occ"));
 
-  private_nh_.param("lidar_min_height", lidar_min_height, 0.0f);
+  private_nh_.param("lidar_min_height", lidar_min_height, 0.1f);
   private_nh_.param("lidar_max_height", lidar_max_height, 3.0f);
 
   private_nh_.param("map/size", params_.size, 100.0f);
-  private_nh_.param("map/resolution", params_.resolution, 0.5f);
-  private_nh_.param("particles/particle_count", params_.particle_count, 20000);
+  private_nh_.param("map/resolution", params_.resolution, 0.25f);
+  private_nh_.param("particles/particle_count", params_.particle_count, 50000);
   private_nh_.param("particles/new_born_particle_count",
-                    params_.new_born_particle_count, 2000);
+                    params_.new_born_particle_count, 5000);
   private_nh_.param("particles/persistence_probability",
                     params_.persistence_prob, 0.99f);
   private_nh_.param("particles/process_noise_position",
@@ -77,20 +75,22 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
                     12.0f);
 
   private_nh_.param("laser/fov", laser_params_.fov, 360.0f);
-
-  private_nh_.param("laser/angle_increment", laser_params_.angle_increment, lidar_inc_degrees);
+  private_nh_.param("laser/angle_increment", lidar_inc, 0.0087f);
   private_nh_.param("laser/max_range", laser_params_.max_range, 50.0f);
 
-  // TODO: laser resolution is currently assumed to be the same as the map
-  laser_params_.resolution = 0.2;
+  laser_params_.resolution = 0.1;
+  laser_params_.angle_increment = lidar_inc * 180.0 / M_PI;
+
   laser_conv_ = std::make_unique<dogm::LaserMeasurementGrid>(
       laser_params_, params_.size, params_.resolution);
   grid_map_ = std::make_unique<dogm::DOGM>(params_);
 
   is_first_measurement_ = true;
 
-//  subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processPointCloud, this);
-  subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processLaserScan, this);
+  //  subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1,
+  //  &DOGMRos::processPointCloud, this);
+  subscriber_laser_ =
+      nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processLaserScan, this);
   subscriber_odometry_ = nh_.subscribe(subscribe_odometry_topic, 1,
                                        &DOGMRos::processOdometry, this);
   publisher_dogm_ =
@@ -128,10 +128,8 @@ void DOGMRos::processPointCloud(
     }
   }
 
-  // TODO: Lidar FOV is hard-coded to two pi for the time being
-//  auto ray_data = std::vector<float>(int(2 * M_PI / laser_params_.angle_increment),
-//                                     std::numeric_limits<float>::infinity());
-    auto ray_data = std::vector<float>(int(2 * M_PI / lidar_inc), std::numeric_limits<float>::infinity());
+  auto ray_data = std::vector<float>(int(2 * M_PI / lidar_inc),
+                                     std::numeric_limits<float>::infinity());
 
   const unsigned char *data_ptr = cloud->data.data();
   for (int i = 0; i < points; i++) {
@@ -150,32 +148,22 @@ void DOGMRos::processPointCloud(
 
     auto angle = atan2(y, x) + M_PI;
     auto range = sqrt(x * x + y * y + z * z);
-//    auto bucket = (unsigned long)(floor(angle / laser_params_.angle_increment));
-      auto bucket = (unsigned long)(round(angle / lidar_inc));
+    //    auto bucket = (unsigned long)(floor(angle /
+    //    laser_params_.angle_increment));
+    auto bucket = (unsigned long)(round(angle / lidar_inc));
 
     if (range < ray_data[bucket]) {
       ray_data[bucket] = range;
     }
   }
 
-  auto msg = sensor_msgs::LaserScan();
-  msg.header.stamp = ros::Time::now();
-  msg.header.frame_id = "map";
-  msg.angle_min = -M_PI;
-  msg.angle_max = M_PI;
-  msg.angle_increment = lidar_inc;
-  msg.range_min = 0;
-  msg.range_max = 10;
-  msg.ranges = ray_data;
-  publisher_scan.publish( msg );
-
   processSensorScanData(time_stamp, ray_data);
 }
 
 void DOGMRos::processLaserScan(const sensor_msgs::LaserScan::ConstPtr &scan) {
-    double time_stamp = scan->header.stamp.toSec();
+  double time_stamp = scan->header.stamp.toSec();
 
-    processSensorScanData(time_stamp, scan->ranges);
+  processSensorScanData(time_stamp, scan->ranges);
 }
 
 void DOGMRos::processSensorScanData(float time_stamp,
@@ -187,28 +175,47 @@ void DOGMRos::processSensorScanData(float time_stamp,
     return;
   }
 
-  auto cell_data = laser_conv_->generateGrid(data);
+  auto cell_data = laser_conv_->generateGrid(data); // pos_yaw*180/M_PI );
 
-    if (!is_first_measurement_) {
-        float dt = time_stamp - last_time_stamp_;
-        grid_map_->updateGrid( cell_data, pos_x, pos_y, dt );
-    } else {
-        grid_map_->updateGrid( cell_data, pos_x, pos_y, 0.0 );
-        is_first_measurement_ = false;
-    }
+#if USE_SOA
+  if (!is_first_measurement_) {
+    float dt = time_stamp - last_time_stamp_;
+    grid_map_->updateGrid(cell_data, pos_x, pos_y, dt);
+  } else {
+    grid_map_->updateGrid(cell_data, pos_x, pos_y, 0.0);
+    is_first_measurement_ = false;
+  }
+#else
+  if (!is_first_measurement_) {
+    float dt = time_stamp - last_time_stamp_;
+    grid_map_->updateGrid(cell_data, pos_x, pos_y, dt, true);
+  } else {
+    grid_map_->updateGrid(cell_data, pos_x, pos_y, 0.0, true);
+    is_first_measurement_ = false;
+  }
+#endif
 
-    dogm_msgs::DynamicOccupancyGrid dogma_msg;
-    dogm_ros::DOGMRosConverter::toDOGMMessage(*grid_map_, dogma_msg);
-    publisher_dogm_.publish(dogma_msg);
+  last_time_stamp_ = time_stamp;
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  cumulative_time += duration.count();
 
-    nav_msgs::OccupancyGrid message;
-    dogm_ros::DOGMRosConverter::toOccupancyGridMessage(*grid_map_, message);
-    publisher_occ_.publish(message);
+  dogm_msgs::DynamicOccupancyGrid dogma_msg;
+  dogm_ros::DOGMRosConverter::toDOGMMessage(*grid_map_, dogma_msg);
+  publisher_dogm_.publish(dogma_msg);
 
-    last_time_stamp_ = time_stamp;
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    //    std::cout << duration.count() << std::endl;
+  nav_msgs::OccupancyGrid message;
+  dogm_ros::DOGMRosConverter::toOccupancyGridMessage(*grid_map_, message);
+  publisher_occ_.publish(message);
+
+  //    map_count ++;
+  //    if( map_count > 5000 ) {
+  //        ros::shutdown();
+  //        std::cout << "After " << map_count << " iterations: " <<
+  //        cumulative_time / map_count / 1000 << "mS per iteration";
+  //    }
+  //    std::cout << duration.count() << std::endl;
 }
 
 void DOGMRos::processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg) {
