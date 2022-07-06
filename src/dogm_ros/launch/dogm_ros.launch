@@ -20,6 +20,7 @@
     <arg name="laser_fov" default="360.0"/>
     <arg name="laser_max_range" default="50.0"/>
     <arg name="angle_increment" default="0.0087"/>
+    <arg name="laser_sigma" default="0.1"/>
 
     <!-- Launch pointcloud to scan conversion -->
     <include file="$(find dogm_ros)/launch/pointcloud_to_laserscan.launch">
@@ -45,6 +46,7 @@
         <param name="laser/fov" value="$(arg laser_fov)"/>
         <param name="laser/max_range" value="$(arg laser_max_range)"/>
         <param name="laser/angle_increment" value="$(arg angle_increment)"/>
+        <param name="laser/sigma" value="$(arg laser_sigma)"/>
     </node>
 
 

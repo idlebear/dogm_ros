@@ -39,10 +39,10 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
     : nh_(nh), private_nh_(private_nh), grid_map_(nullptr) {
   std::string subscribe_laser_topic;
 
-  private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
-                    std::string("/scan"));
-  //  private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
-  //                    std::string("/carla/ego_vehicle/lidar/lidar1/point_cloud"));
+//  private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
+//                    std::string("/scan"));
+    private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
+                      std::string("/mid/points"));
   std::string subscribe_odometry_topic;
   private_nh_.param("subscribe/odometry_topic", subscribe_odometry_topic,
                     std::string("/carla/ego_vehicle/odometry"));
@@ -54,29 +54,30 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
   private_nh_.param("publish/occ_topic", publish_occ_topic,
                     std::string("/dogm/occ"));
 
-  private_nh_.param("lidar_min_height", lidar_min_height, 0.1f);
+  private_nh_.param("lidar_min_height", lidar_min_height, -0.25f);
   private_nh_.param("lidar_max_height", lidar_max_height, 3.0f);
 
-  private_nh_.param("map/size", params_.size, 100.0f);
-  private_nh_.param("map/resolution", params_.resolution, 0.25f);
-  private_nh_.param("particles/particle_count", params_.particle_count, 50000);
+  private_nh_.param("map/size", params_.size, 20.0f);
+  private_nh_.param("map/resolution", params_.resolution, 0.1f);
+  private_nh_.param("particles/particle_count", params_.particle_count, 20000);
   private_nh_.param("particles/new_born_particle_count",
-                    params_.new_born_particle_count, 5000);
+                    params_.new_born_particle_count, 2000);
   private_nh_.param("particles/persistence_probability",
                     params_.persistence_prob, 0.99f);
   private_nh_.param("particles/process_noise_position",
-                    params_.stddev_process_noise_position, 0.02f);
+                    params_.stddev_process_noise_position, 0.05f);
   private_nh_.param("particles/process_noise_velocity",
-                    params_.stddev_process_noise_velocity, 0.8f);
+                    params_.stddev_process_noise_velocity, 0.05f);
   private_nh_.param("particles/birth_probability", params_.birth_prob, 0.02f);
   private_nh_.param("particles/velocity_persistent", params_.stddev_velocity,
-                    12.0f);
+                    0.5f);
   private_nh_.param("particles/velocity_birth", params_.init_max_velocity,
-                    12.0f);
+                    5.0f);
 
   private_nh_.param("laser/fov", laser_params_.fov, 360.0f);
-  private_nh_.param("laser/angle_increment", lidar_inc, 0.0087f);
-  private_nh_.param("laser/max_range", laser_params_.max_range, 50.0f);
+  private_nh_.param("laser/angle_increment", lidar_inc, 0.0055f);
+  private_nh_.param("laser/max_range", laser_params_.max_range, 20.0f);
+  private_nh_.param("laser/sigma", laser_params_.sigma, 0.1f);
 
   laser_params_.resolution = 0.1;
   laser_params_.angle_increment = lidar_inc * 180.0 / M_PI;
@@ -87,10 +88,10 @@ DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
 
   is_first_measurement_ = true;
 
-  //  subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1,
-  //  &DOGMRos::processPointCloud, this);
-  subscriber_laser_ =
-      nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processLaserScan, this);
+    subscriber_laser_ = nh_.subscribe(subscribe_laser_topic, 1,
+        &DOGMRos::processPointCloud, this);
+//  subscriber_laser_ =
+//      nh_.subscribe(subscribe_laser_topic, 1, &DOGMRos::processLaserScan, this);
   subscriber_odometry_ = nh_.subscribe(subscribe_odometry_topic, 1,
                                        &DOGMRos::processOdometry, this);
   publisher_dogm_ =
@@ -209,13 +210,17 @@ void DOGMRos::processSensorScanData(float time_stamp,
   dogm_ros::DOGMRosConverter::toOccupancyGridMessage(*grid_map_, message);
   publisher_occ_.publish(message);
 
-  //    map_count ++;
-  //    if( map_count > 5000 ) {
-  //        ros::shutdown();
-  //        std::cout << "After " << map_count << " iterations: " <<
-  //        cumulative_time / map_count / 1000 << "mS per iteration";
-  //    }
-  //    std::cout << duration.count() << std::endl;
+      map_count ++;
+      if( map_count && map_count % 100 == 0) {
+          std::cout << map_count << std::endl;
+      }
+
+//      if( map_count > 1000 ) {
+//          ros::shutdown();
+//          std::cout << "After " << map_count << " iterations: " <<
+//          cumulative_time / map_count / 1000 << "mS per iteration";
+//      }
+//      std::cout << duration.count() << std::endl;
 }
 
 void DOGMRos::processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg) {
