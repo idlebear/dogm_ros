@@ -57,8 +57,6 @@
 
 namespace dogm_rviz_plugin {
 
-const double max_expected_velocity = 7.5; // m/s
-
 DOGMDisplay::DOGMDisplay() : loaded_(false), resolution_(0.0f), size_(0) {
   topic_property_ = new rviz::RosTopicProperty(
       "Topic", "dogm/map",
@@ -109,6 +107,13 @@ DOGMDisplay::DOGMDisplay() : loaded_(false), resolution_(0.0f), size_(0) {
       "Mahalanobis distance", 0.2,
       "Mahalanobis distance at which object is considered dynamic.", this);
   mahalanobis_property_->setMin(0.0f);
+
+  velocity_range_property_ = new rviz::FloatProperty(
+          "Velocity Range Max", 1.0,
+          "Maximum value for velocity range - used to scale received values for visualization", this);
+  occ_property_->setMin(0.0f);
+  occ_property_->setMax(20.0f);
+
 }
 
 DOGMDisplay::~DOGMDisplay() {
@@ -375,8 +380,8 @@ void DOGMDisplay::processMessage(
         mdist >= mahalanobis_property_->getFloat()) {
       float angle = atan2(cell.mean_y_vel, cell.mean_x_vel) + Ogre::Math::PI;
 
-      auto value = std::min(1.0, sqrt(cell.mean_x_vel * cell.mean_x_vel +
-                                      cell.mean_y_vel * cell.mean_y_vel) / max_expected_velocity );
+      auto value = std::min(1.0f, float(sqrt(cell.mean_x_vel * cell.mean_x_vel +
+                                      cell.mean_y_vel * cell.mean_y_vel) / velocity_range_property_->getFloat()) );
 
       int r, g, b;
       hsvToRGB(angle / Ogre::Math::PI, 1.0f, value, r, g, b);

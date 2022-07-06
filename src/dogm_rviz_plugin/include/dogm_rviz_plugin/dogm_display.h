@@ -110,6 +110,7 @@ protected:
   rviz::QuaternionProperty *orientation_property_;
   rviz::FloatProperty *alpha_property_;
   rviz::BoolProperty *draw_under_property_;
+  rviz::FloatProperty *velocity_range_property_;
 };
 
 } // end namespace dogm_rviz_plugin
