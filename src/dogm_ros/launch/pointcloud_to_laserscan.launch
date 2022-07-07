@@ -10,7 +10,7 @@
         <remap from="scan" to="$(arg output)"/>
         <rosparam>
             # with input from: https://github.com/hiwad-aziz/carla_gmapping/blob/main/pcl_to_ls.launch
-            target_frame: ego_vehicle
+            target_frame: odom
             transform_tolerance: 0.01
             min_height: 0.2
             max_height: 1.2
