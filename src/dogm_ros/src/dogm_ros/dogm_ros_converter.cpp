@@ -1,4 +1,3 @@
-#include <tf2/LinearMath/Quaternion.h>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -17,8 +16,8 @@ namespace dogm_ros {
 void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
                                      dogm_msgs::DynamicOccupancyGrid &message) {
   message.header.stamp = ros::Time::now();
-  // TODO:  should be publishing the map in the car's reference frame
-  message.header.frame_id = "map";
+  // TODO:  make the map reference frame a configurable option
+  message.header.frame_id = "odom";
 
   message.info.resolution = dogm.getResolution();
   message.info.length = float(dogm.getGridSize()) * dogm.getResolution();
@@ -79,7 +78,8 @@ void DOGMRosConverter::toOccupancyGridMessage(
     const dogm::DOGM &dogm, nav_msgs::OccupancyGrid &message) {
 
     message.header.stamp = ros::Time::now();
-    message.header.frame_id = "map";
+    // TODO:  make the map reference frame a configurable option
+    message.header.frame_id = "odom";
     message.info.map_load_time = message.header.stamp;
     message.info.resolution = dogm.getResolution();
     message.info.width = dogm.getGridSize();
