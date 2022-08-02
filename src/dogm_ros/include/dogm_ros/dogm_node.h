@@ -26,53 +26,73 @@ SOFTWARE.
 #include <dogm/dogm.h>
 #include <dogm/dogm_types.h>
 #include <dogm/mapping/laser_to_meas_grid.h>
+#include <dogm_msgs/DynamicOccupancyGrid.h>
+#include <Eigen/Dense>
 #include <nav_msgs/Odometry.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/cuda.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <tf/tf.h>
 
+#include "dogm_ros/dogm_ros.h"
+#include "dogm_ros/state_estimate.h"
+
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgcodecs.hpp"
+
+
 namespace dogm_ros {
 
-class DOGMRos {
-public:
-  DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh);
+    class DOGMRos {
+        public:
+            DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh, bool use_laserscan = true);
+            virtual ~DOGMRos() = default;
 
-  virtual ~DOGMRos() = default;
+            void processLaserScan(const sensor_msgs::LaserScan::ConstPtr &scan);
+            void processPointCloud(const sensor_msgs::PointCloud2::ConstPtr &scan);
+            void processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg);
 
-  void processLaserScan(const sensor_msgs::LaserScan::ConstPtr &scan);
-  void processPointCloud(const sensor_msgs::PointCloud2::ConstPtr &scan);
-  void processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg);
+        protected:
+            void processSensorScanData(float time_stamp, const std::vector<float> &data);
+            cv::Mat getMeasuredOccMassImage() const;
+            cv::Mat getMeasuredFreeMassImage() const;
 
-protected:
-  void processSensorScanData(float time_stamp, const std::vector<float> &data);
+        private:
+            ros::NodeHandle nh_;
+            ros::NodeHandle private_nh_;
 
-private:
-  ros::NodeHandle nh_;
-  ros::NodeHandle private_nh_;
+            ros::Subscriber subscriber_laser_;
+            ros::Subscriber subscriber_odometry_;
+            ros::Subscriber subscriber_tf_;
+            ros::Publisher publisher_dogm_;
+            ros::Publisher publisher_occ_;
+            ros::Publisher publisher_scan;
 
-  ros::Subscriber subscriber_laser_;
-  ros::Subscriber subscriber_odometry_;
-  ros::Publisher publisher_dogm_;
-  ros::Publisher publisher_occ_;
-  ros::Publisher publisher_scan;
+            dogm::DOGM::Params params_;
+            dogm::LaserMeasurementGrid::Params laser_params_;
 
-  dogm::DOGM::Params params_;
-  dogm::LaserMeasurementGrid::Params laser_params_;
+            float last_time_stamp_;
+            bool is_first_measurement_;
+            bool use_laserscan;
 
-  float last_time_stamp_;
-  bool is_first_measurement_;
+            std::unique_ptr<dogm::LaserMeasurementGrid> laser_conv_;
+            std::unique_ptr<dogm::DOGM> grid_map_;
 
-  std::unique_ptr<dogm::LaserMeasurementGrid> laser_conv_;
-  std::unique_ptr<dogm::DOGM> grid_map_;
+            float lidar_min_height;
+            float lidar_max_height;
+            float lidar_inc;
 
-  float lidar_min_height;
-  float lidar_max_height;
-  float lidar_inc;
+            std::string base_frame;
+            std::string lidar_frame;
 
-  float pos_x;
-  float pos_y;
-  float pos_yaw;
-};
+            float pos_x;
+            float pos_y;
+            float pos_yaw;
+
+            StateEstimate state;
+            ros::Time last_position_update;
+    };
 
 } // namespace dogm_ros
