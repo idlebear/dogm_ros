@@ -87,6 +87,9 @@ namespace dogm_ros {
         private_nh_.param("laser/max_range", laser_params_.max_range, 50.0f);
         private_nh_.param("laser/sigma", laser_params_.stddev_range, 0.25f);
 
+        private_nh_.param("tf/base", base_frame, std::string("ego_vehicle"));
+        private_nh_.param("tf/lidar", lidar_frame, std::string("ego_vehicle/lidar"));
+
         laser_params_.resolution = 0.1;
         laser_params_.angle_increment = lidar_inc * 180.0 / M_PI;
 
@@ -108,6 +111,17 @@ namespace dogm_ros {
                 nh_.advertise<dogm_msgs::DynamicOccupancyGrid>(publish_dogm_topic, 1);
         publisher_occ_ = nh_.advertise<nav_msgs::OccupancyGrid>(publish_occ_topic, 1);
         publisher_scan = nh_.advertise<sensor_msgs::LaserScan>("/scan", 1);
+
+        // create debug windows so we can see what's going on locally
+        //    namedWindow("Predicted", cv::WINDOW_NORMAL); // Create Window
+        namedWindow("Born", cv::WINDOW_NORMAL); // Create Window
+        //    namedWindow("Persistent", cv::WINDOW_NORMAL); // Create Window
+        //    namedWindow("Occupancy", cv::WINDOW_NORMAL); // Create Window
+        namedWindow("Particles!", cv::WINDOW_NORMAL); // Create Window
+        namedWindow("Free Mass", cv::WINDOW_NORMAL);  // Create Window
+        namedWindow("Occ Mass", cv::WINDOW_NORMAL);   // Create Window
+
+        cv::startWindowThread();
     }
 
     void DOGMRos::processPointCloud(
@@ -212,6 +226,10 @@ namespace dogm_ros {
                 std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         cumulative_time += duration.count();
 
+        auto img = getMeasuredOccMassImage();
+        imshow("Occ Mass", img);
+        img = getMeasuredFreeMassImage();
+        imshow("Free Mass", img);
 
         dogm_msgs::DynamicOccupancyGrid dogma_msg;
         dogm_ros::DOGMRosConverter::toDOGMMessage(*grid_map_, dogma_msg);

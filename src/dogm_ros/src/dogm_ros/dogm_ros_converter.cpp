@@ -8,6 +8,8 @@
 #include "dogm_ros/dogm_ros.h"
 #include "dogm_ros/dogm_ros_converter.h"
 
+#include "opencv2/highgui.hpp"
+
 namespace dogm_ros {
 
   static int seq = 1000;
@@ -44,6 +46,28 @@ void DOGMRosConverter::toDOGMMessage(const dogm::DOGM &dogm,
   message.data.resize(dogm.getGridSize() * dogm.getGridSize());
 
   auto grid_cells = dogm.getGridCells();
+
+  auto img = dogm.getNewBornOccMassImage( grid_cells );
+  imshow( "Born", img );
+//  img = dogm.getPredOccMassImage( grid_cells );
+//  imshow( "Predicted", img );
+//  img = dogm.getPersOccMassImage( grid_cells );
+//  imshow( "Persistent", img );
+//  img = dogm.getOccupancyImage( grid_cells );
+//  imshow( "Occupancy", img );
+  img = dogm.getParticleCountImage( grid_cells );
+  imshow( "Particles!", img );
+
+//  auto moving_cells = 0;
+//  for (int i = 0; i < message.data.size(); i++) {
+////      if (grid_cells.occ_mass[i] > 0.5) {
+//          if (grid_cells.mean_y_vel[i] > 0.5 || grid_cells.mean_x_vel[i] > 0.5 ) {
+//              moving_cells++;
+//          }
+////      }
+//  }
+//
+//  printf( "Currently %d cells moving\n", moving_cells );
 
 #if USE_SOA
 #pragma omp parallel for
