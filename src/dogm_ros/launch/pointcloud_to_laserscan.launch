@@ -1,35 +1,43 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="input" default="/carla/ego_vehicle/lidar" />
-    <arg name="output" default="/carla/ego_vehicle/scan" />
+    <arg name="output" default="/scan" />
+    <arg name="target_frame" default="ego_vehicle" />
+
+    <!--    LIDAR Parameters   -->
+    <!-- with input from: https://github.com/hiwad-aziz/carla_gmapping/blob/main/pcl_to_ls.launch-->
+    <arg name="transform_tolerance" default="0.01" />
+    <arg name="min_height" default="0.05" />
+    <arg name="max_height" default="1.2" />
+    <arg name="angle_min" default="-3.14159" />
+    <arg name="angle_max" default="3.14159" />
+    <arg name="angle_increment" default="0.0087" />
+    <arg name="scan_time" default="0.3333" />
+    <arg name="range_min" default="0.45" />
+    <arg name="range_max" default="50.0" />
+    <arg name="use_inf" default="false" />
+    <!-- Concurrency level, affects number of pointclouds queued for processing and number of threads used-->
+    <!-- 0 : Detect number of cores-->
+    <!-- 1 : Single threaded-->
+    <!-- 2->inf : Parallelism level-->
+    <arg name="concurrency_level" default="0" />
 
     <!-- run pointcloud_to_laserscan node -->
     <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
-
         <remap from="cloud_in" to="$(arg input)"/>
         <remap from="scan" to="$(arg output)"/>
-        <rosparam>
-            # with input from: https://github.com/hiwad-aziz/carla_gmapping/blob/main/pcl_to_ls.launch
-            target_frame: odom
-            transform_tolerance: 0.01
-            min_height: 0.2
-            max_height: 1.2
-            
-            angle_min: -3.14159
-            angle_max: 3.14159
-            angle_increment: 0.0087
-            scan_time: 0.3333
-            range_min: 0.45
-            range_max: 50.0
-            use_inf: false
-            
-            # Concurrency level, affects number of pointclouds queued for processing and number of threads used
-            # 0 : Detect number of cores
-            # 1 : Single threaded
-            # 2->inf : Parallelism level
-            concurrency_level: 0
-        </rosparam>
-
+        <param name="target_frame" value="$(arg target_frame)"/>
+        <param name="transform_tolerance" value="$(arg transform_tolerance)"/>
+        <param name="min_height" value="$(arg min_height)"/>
+        <param name="max_height" value="$(arg max_height)"/>
+        <param name="angle_min" value="$(arg angle_min)"/>
+        <param name="angle_max" value="$(arg angle_max)"/>
+        <param name="angle_increment" value="$(arg angle_increment)"/>
+        <param name="scan_time" value="$(arg scan_time)"/>
+        <param name="range_min" value="$(arg range_min)"/>
+        <param name="range_max" value="$(arg range_max)"/>
+        <param name="use_inf" value="$(arg use_inf)"/>
+        <param name="concurency_level" value="concurency_level"/>
     </node>
 
 </launch>

@@ -22,6 +22,9 @@
     <arg name="angle_increment" default="0.0087"/>
     <arg name="laser_sigma" default="0.1"/>
 
+    <arg name="base_frame" default="ego_vehicle"/>
+    <arg name="laser_frame" default="ego_vehicle/lidar"/>
+
     <!-- Launch pointcloud to scan conversion -->
     <include file="$(find dogm_ros)/launch/pointcloud_to_laserscan.launch">
         <arg name="input" value="$(arg cloud_source)"/>
@@ -47,6 +50,8 @@
         <param name="laser/max_range" value="$(arg laser_max_range)"/>
         <param name="laser/angle_increment" value="$(arg angle_increment)"/>
         <param name="laser/sigma" value="$(arg laser_sigma)"/>
+        <param name="tf/base" value="$(arg base_frame)"/>
+        <param name="tf/lidar" value="$(arg lidar_frame)"/>
     </node>
 
 
