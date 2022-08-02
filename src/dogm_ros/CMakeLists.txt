@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.16)
 project(dogm_ros LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
-# set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBUILD_SHARED_LIBS=OFF")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules/")
 
 ## Find catkin macros and libraries
@@ -14,9 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
-find_package(OpenCV REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(DOGM REQUIRED)
+find_package(OpenCV REQUIRED )
+find_package(Eigen3 3.4 REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -43,11 +44,14 @@ catkin_package(
 ###########
 ## Build ##
 ###########
- message(${DOGM_INCLUDE_DIRS})
+message(${DOGM_INCLUDE_DIRS})
+message(${DOGM_LIBRARIES})
+
 ## Specify additional locations of header files
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${DOGM_INCLUDE_DIRS}
@@ -60,10 +64,10 @@ add_library(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+  ${DOGM_LIBRARIES}
   ${catkin_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${OpenCV_LIBS}
-  ${DOGM_LIBRARIES}
 )
 
 add_dependencies(${PROJECT_NAME}
@@ -71,17 +75,27 @@ add_dependencies(${PROJECT_NAME}
 )
 
 add_library(${PROJECT_NAME}_nodelet src/dogm_ros_nodelet.cpp)
-target_link_libraries(${PROJECT_NAME}_nodelet ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_nodelet
+        ${PROJECT_NAME}
+        ${DOGM_LIBRARIES}
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
 
 ### Declare a C++ executable
 add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp
         src/dogm_ros/dogm_ros_converter.cpp
         src/dogm_ros/dogm_node.cpp
+        src/dogm_ros/state_estimate.cpp
 )
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
-target_link_libraries(${PROJECT_NAME}_node ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries( ${PROJECT_NAME}_node
+        ${DOGM_LIBRARIES}
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
 
 #############
 ## Install ##
