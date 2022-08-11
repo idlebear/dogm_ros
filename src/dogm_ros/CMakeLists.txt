@@ -61,7 +61,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/dogm_ros/dogm_ros_converter.cpp
   src/dogm_ros/dogm_node.cpp
-)
+        include/dogm_ros/flow.h src/dogm_ros/flow.cpp)
 
 target_link_libraries(${PROJECT_NAME}
   ${DOGM_LIBRARIES}
@@ -95,7 +95,18 @@ target_link_libraries( ${PROJECT_NAME}_node
         ${DOGM_LIBRARIES}
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
-        )
+)
+
+### Declare a C++ executable
+add_executable(${PROJECT_NAME}_flow src/test_flow.cpp
+        src/dogm_ros/flow.cpp
+)
+
+# target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries( ${PROJECT_NAME}_flow
+        ${OpenCV_LIBS}
+)
+
 
 #############
 ## Install ##
