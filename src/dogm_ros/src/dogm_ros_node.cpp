@@ -23,11 +23,47 @@ SOFTWARE.
 */
 #include "dogm_ros/dogm_node.h"
 #include <ros/ros.h>
+#include <signal.h>
+#include <thread>
+
+void
+shutdown_handler(int signal) {
+    // Just in case we need some custom shutdown handling...
+    ros::shutdown();
+}
+
+/*
+ * run_simulation
+ *
+ * Params:
+ *
+ * dogm -- the map object use use for sensor information
+ * nh -- ROS node handle
+ *
+ */
+void
+run_simulation(dogm_ros::DOGMRos *dogm) {
+    // TODO: Get frequency from ROS params
+    // define a target refresh raite
+    const int target_interval_time = 10; // hz
+    auto rate = ros::Rate(target_interval_time);
+
+    while (ros::ok()) {
+        dogm->publishOccupancyGrid();
+        rate.sleep();
+    }
+}
+
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "dogm_node");
-  dogm_ros::DOGMRos dogm(ros::NodeHandle(), ros::NodeHandle("~"));
-  ros::spin();
+    ros::init(argc, argv, "dogm_node");
+    dogm_ros::DOGMRos dogm(ros::NodeHandle(), ros::NodeHandle("~"));
+    signal(SIGINT, shutdown_handler);
 
-  return 0;
+    std::thread worker(run_simulation, &dogm);
+
+    ros::spin();
+    worker.join();
+
+    return 0;
 }

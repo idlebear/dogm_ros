@@ -9,16 +9,17 @@
 
 namespace dogm_ros {
 
-class DOGMRosConverter {
-public:
-  DOGMRosConverter() = default;
-  virtual ~DOGMRosConverter() = default;
+    class DOGMRosConverter {
+        public:
+        DOGMRosConverter() = default;
 
-  static void toDOGMMessage(const dogm::DOGM &dogm,
-                            dogm_msgs::DynamicOccupancyGrid &message);
+        virtual ~DOGMRosConverter() = default;
 
-  static void toOccupancyGridMessage(const dogm::DOGM &dogm,
-                                     nav_msgs::OccupancyGrid &message);
-};
+        static void toDOGMMessage(const dogm::DOGM &dogm, const std::string& frame,
+                                  dogm_msgs::DynamicOccupancyGrid &message, bool show_debug = false);
+
+        static void toOccupancyGridMessage(const dogm::DOGM &dogm, const std::string& frame,
+                                           nav_msgs::OccupancyGrid &message, bool show_debug = false);
+    };
 
 } /* namespace dogm_ros */
