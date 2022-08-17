@@ -31,13 +31,7 @@ namespace dogm_ros {
 
     DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh, bool show_debug)
             : show_debug(show_debug), nh_(nh), private_nh_(private_nh), grid_map_(nullptr),
-              cumulative_time( 0 ), map_count(0),
-              state( Eigen::Matrix4d { {0.1,   0,   0,   0},
-                                       {  0, 0.1,   0,   0},
-                                       {  0,   0, 0.1,   0},
-                                       {  0,   0,   0, 0.1} }, Eigen::Matrix2d { { 1, 0 },
-                                                                               { 0, 1 } }),
-              last_position_update( 0 ) {
+              cumulative_time( 0 ), map_count(0) {
         std::string subscribe_laser_topic;
 
         private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
@@ -209,19 +203,6 @@ namespace dogm_ros {
         mat.getRPY(roll, pitch, yaw);
 
         pos_yaw = float(yaw);
-
-        auto dt = (odom_msg->header.stamp - last_position_update).toSec();
-        if( dt < 0 ) {
-            // bad update -- ignore it
-        } else {
-            auto new_state = state.step( { odom_msg->pose.pose.position.x, odom_msg->pose.pose.position.y }, dt );
-            auto vx = new_state.first[2];
-            auto vy = new_state.first[3];
-            auto v = sqrt( vx*vx + vy*vy );
-            printf( "Current velocity: %4.2f, %4.2f  (%4.2fm/s %4.2fk/h), dt: %f\n", vx, vy, v, v*3.6, dt );
-        }
-
-        last_position_update = odom_msg->header.stamp;
     }
 
     cv::Mat DOGMRos::getMeasuredOccMassImage() const {

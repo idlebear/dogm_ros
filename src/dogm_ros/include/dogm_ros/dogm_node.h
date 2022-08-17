@@ -93,10 +93,7 @@ namespace dogm_ros {
             float pos_x;
             float pos_y;
             float pos_yaw;
-
-            StateEstimate state;
-            ros::Time last_position_update;
-
+            
             std::mutex grid_mutex;
     };
 
