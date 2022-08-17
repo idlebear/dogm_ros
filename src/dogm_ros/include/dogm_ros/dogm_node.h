@@ -93,7 +93,7 @@ namespace dogm_ros {
             float pos_x;
             float pos_y;
             float pos_yaw;
-            
+
             std::mutex grid_mutex;
     };
 
