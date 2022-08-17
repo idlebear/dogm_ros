@@ -61,7 +61,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/dogm_ros/dogm_ros_converter.cpp
   src/dogm_ros/dogm_node.cpp
-        include/dogm_ros/flow.h src/dogm_ros/flow.cpp)
+)
 
 target_link_libraries(${PROJECT_NAME}
   ${DOGM_LIBRARIES}
