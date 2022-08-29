@@ -38,7 +38,7 @@ namespace dogm_ros {
                           std::string("/scan"));
         std::string subscribe_odometry_topic;
         private_nh_.param("subscribe/odometry_topic", subscribe_odometry_topic,
-                          std::string("/carla/ego_vehicle/odometry"));
+                          std::string("/odometry/filtered"));
 
         std::string publish_dogm_topic;
         private_nh_.param("publish/dogm_topic", publish_dogm_topic,
@@ -48,7 +48,7 @@ namespace dogm_ros {
                           std::string("/dogm/occ"));
 
         private_nh_.param("map/size", params_.size, 20.0f);
-        private_nh_.param("map/resolution", params_.resolution, 0.1f);
+        private_nh_.param("map/resolution", params_.resolution, 0.25f);
         private_nh_.param("particles/particle_count", params_.particle_count, 500000);
         private_nh_.param("particles/new_born_particle_count",
                           params_.new_born_particle_count, 100000);
@@ -68,11 +68,11 @@ namespace dogm_ros {
 
         float lidar_inc;
         private_nh_.param("laser/angle_increment", lidar_inc, 0.0087f);
-        private_nh_.param("laser/max_range", laser_params_.max_range, 10.0f);
+        private_nh_.param("laser/max_range", laser_params_.max_range, 30.0f);
         private_nh_.param("laser/sigma", laser_params_.stddev_range, 0.1f);
 
         private_nh_.param("tf/base", base_frame, std::string("base_link"));
-        private_nh_.param("tf/lidar", lidar_frame, std::string("lidar"));
+        private_nh_.param("tf/lidar", lidar_frame, std::string("velodyne"));
 
         laser_params_.resolution = 0.1;
         laser_params_.angle_increment = lidar_inc * 180.0 / M_PI;
@@ -112,7 +112,7 @@ namespace dogm_ros {
             return;
         }
 
-        auto cell_data = laser_conv_->generateGrid(data); // pos_yaw*180.0/M_PI );
+        auto cell_data = laser_conv_->generateGrid(data,pos_yaw*180.0/M_PI );
 
         {
             std::lock_guard<std::mutex> guard( grid_mutex );
