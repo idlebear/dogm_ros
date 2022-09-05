@@ -26,10 +26,36 @@ SOFTWARE.
 #include <signal.h>
 #include <thread>
 
+#include "map.h"
+
 void
 shutdown_handler(int signal) {
     // Just in case we need some custom shutdown handling...
     ros::shutdown();
+}
+
+void predict( dogm_ros::DOGMRos* dogm_ptr, info_gain::Map map ) {
+    // perform one iteration
+    //     get the current state/update sensors
+    auto occ = dogm_ptr->getOccupancyGrid();
+    auto pos = dogm_ptr->getPos();
+
+    //     make estimates
+    auto estimate = map.get_flow( pos, occ, 3, 0.5 );
+
+    int c = 0;
+    for( const auto& oc : estimate ) {
+        Eigen::MatrixXf oc_mat( oc.colwise().reverse() );
+        cv::Mat mat(oc.rows(), oc.cols(), CV_32F );
+        cv::eigen2cv(  oc_mat, mat );
+
+        auto window_title = std::string( "Now" ) + ( c ? "+"+std::to_string(c) : "" );
+        cv::imshow( window_title, mat );
+
+        c++;
+    }
+
+    return;
 }
 
 /*
@@ -48,8 +74,23 @@ run_simulation(dogm_ros::DOGMRos *dogm) {
     const int target_interval_time = 10; // hz
     auto rate = ros::Rate(target_interval_time);
 
+    const std::string mapdir("/home/bjgilhul/workspace/labwork/phd/information-gain/ros/src/ig_car/maps" );
+    const std::string mapname( "e5-0.2m");
+    auto map = info_gain::Map( mapdir, mapname, true);
+
+    // create debug windows so we can see what's going on locally
+    namedWindow("Now", cv::WINDOW_NORMAL); // Create Window
+    namedWindow("Now+1", cv::WINDOW_NORMAL); // Create Window
+    namedWindow("Now+2", cv::WINDOW_NORMAL); // Create Window
+    namedWindow("Now+3", cv::WINDOW_NORMAL); // Create Window
+
+    cv::startWindowThread();
+
     while (ros::ok()) {
         dogm->publishOccupancyGrid();
+
+        predict( dogm, map );
+
         rate.sleep();
     }
 }
@@ -57,7 +98,7 @@ run_simulation(dogm_ros::DOGMRos *dogm) {
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "dogm_node");
-    dogm_ros::DOGMRos dogm(ros::NodeHandle(), ros::NodeHandle("~"));
+    dogm_ros::DOGMRos dogm(ros::NodeHandle(), ros::NodeHandle("~"), false);
     signal(SIGINT, shutdown_handler);
 
     std::thread worker(run_simulation, &dogm);

@@ -7,17 +7,21 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modu
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  # dogm_msgs
-  sensor_msgs
-  nav_msgs
-  std_msgs
+    roscpp
+    tf2_ros
+    # dogm_msgs
+    sensor_msgs
+    nav_msgs
+    geometry_msgs
+    std_msgs
 )
 
 find_package(CUDA REQUIRED)
 find_package(DOGM REQUIRED)
 find_package(OpenCV REQUIRED )
 find_package(Eigen3 3.4 REQUIRED)
+find_package(yaml-cpp REQUIRED)
+
 
 ###################################
 ## catkin specific configuration ##
@@ -35,9 +39,13 @@ catkin_package(
     ${PROJECT_NAME}
   CATKIN_DEPENDS
     roscpp
+    tf
+    tf2_ros
     dogm_msgs
     nav_msgs
     std_msgs
+    sensor_msgs
+    geometry_msgs
   DEPENDS
 )
 
@@ -55,6 +63,7 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${DOGM_INCLUDE_DIRS}
+        ${YAML_CPP_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -80,12 +89,16 @@ target_link_libraries(${PROJECT_NAME}_nodelet
         ${DOGM_LIBRARIES}
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
+        ${YAML_CPP_LIBRARIES}
+
         )
 
 ### Declare a C++ executable
 add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp
         src/dogm_ros/dogm_ros_converter.cpp
         src/dogm_ros/dogm_node.cpp
+        src/dogm_ros/map.cpp
+        src/dogm_ros/flow.cpp
 )
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
@@ -94,17 +107,9 @@ target_link_libraries( ${PROJECT_NAME}_node
         ${DOGM_LIBRARIES}
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
+        ${YAML_CPP_LIBRARIES}
 )
 
-### Declare a C++ executable
-add_executable(${PROJECT_NAME}_flow src/test_flow.cpp
-        src/dogm_ros/flow.cpp
-)
-
-# target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
-target_link_libraries( ${PROJECT_NAME}_flow
-        ${OpenCV_LIBS}
-)
 
 
 #############

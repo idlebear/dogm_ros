@@ -41,10 +41,13 @@ SOFTWARE.
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <tf/tf.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/message_filter.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include "dogm_ros/dogm_ros.h"
 #include "dogm_ros/state_estimate.h"
-
+#include <utility>
 
 namespace dogm_ros {
 
@@ -61,6 +64,14 @@ namespace dogm_ros {
             void publishDynamicGrid();
             void publishOccupancyGrid();
 
+            inline std::pair<float,float> getPos() {
+                return std::make_pair( pos_x, pos_y );
+            };
+
+            inline float getOrientation() {
+                return pos_yaw;
+            };
+
         protected:
             cv::Mat getMeasuredOccMassImage() const;
             cv::Mat getMeasuredFreeMassImage() const;
@@ -75,6 +86,9 @@ namespace dogm_ros {
             ros::Subscriber subscriber_tf_;
             ros::Publisher publisher_dogm_;
             ros::Publisher publisher_occ_;
+
+            tf2_ros::Buffer tf_buffer;
+            tf2_ros::TransformListener tf_listener;
 
             dogm::DOGM::Params params_;
             dogm::LaserMeasurementGrid::Params laser_params_;

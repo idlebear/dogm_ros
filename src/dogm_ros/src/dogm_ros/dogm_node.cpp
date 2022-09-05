@@ -27,11 +27,12 @@ SOFTWARE.
 
 #include "dogm_ros/dogm_node.h"
 
+
 namespace dogm_ros {
 
     DOGMRos::DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh, bool show_debug)
             : show_debug(show_debug), nh_(nh), private_nh_(private_nh), grid_map_(nullptr),
-              cumulative_time( 0 ), map_count(0) {
+              tf_listener(tf_buffer), cumulative_time( 0 ), map_count(0), pos_x(0), pos_y(0), pos_yaw(0) {
         std::string subscribe_laser_topic;
 
         private_nh_.param("subscribe/laser_topic", subscribe_laser_topic,
@@ -48,7 +49,7 @@ namespace dogm_ros {
                           std::string("/dogm/occ"));
 
         private_nh_.param("map/size", params_.size, 20.0f);
-        private_nh_.param("map/resolution", params_.resolution, 0.25f);
+        private_nh_.param("map/resolution", params_.resolution, 0.2f);
         private_nh_.param("particles/particle_count", params_.particle_count, 500000);
         private_nh_.param("particles/new_born_particle_count",
                           params_.new_born_particle_count, 100000);
@@ -86,6 +87,7 @@ namespace dogm_ros {
         subscriber_odometry_ = nh_.subscribe(subscribe_odometry_topic, 1, &DOGMRos::processOdometry, this);
         publisher_dogm_ =nh_.advertise<dogm_msgs::DynamicOccupancyGrid>(publish_dogm_topic, 1);
         publisher_occ_ = nh_.advertise<nav_msgs::OccupancyGrid>(publish_occ_topic, 1);
+
 
         if( show_debug ) {
             // create debug windows so we can see what's going on locally
@@ -182,7 +184,7 @@ namespace dogm_ros {
                 float free_mass = grid_cells.free_mass[y*size + x];
                 float occ_mass = grid_cells.occ_mass[y*size + x];
 
-                occ(x, y) = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
+                occ(y, x) = occ_mass + 0.5f * (1.0f - occ_mass - free_mass);
             }
         }
 
@@ -191,17 +193,30 @@ namespace dogm_ros {
     }
 
     void DOGMRos::processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg) {
+
         double time_stamp = odom_msg->header.stamp.toSec();
+
+        geometry_msgs::Pose tf_pose;
+        try{
+            auto transform = tf_buffer.lookupTransform( "map", "odom", odom_msg->header.stamp );
+            tf2::doTransform(odom_msg->pose.pose, tf_pose, transform);
+        } catch (tf2::TransformException &ex) {
+            ROS_WARN("%s -- Unable to correct Odometry, going with what we have",ex.what());
+            tf_pose = odom_msg->pose.pose;
+        }
+
         tf::Quaternion q;
 
-        q.setW(odom_msg->pose.pose.orientation.w);
-        q.setX(odom_msg->pose.pose.orientation.x);
-        q.setY(odom_msg->pose.pose.orientation.y);
-        q.setZ(odom_msg->pose.pose.orientation.z);
+        q.setW(tf_pose.orientation.w);
+        q.setX(tf_pose.orientation.x);
+        q.setY(tf_pose.orientation.y);
+        q.setZ(tf_pose.orientation.z);
         auto mat = tf::Matrix3x3(q);
         double roll, pitch, yaw;
         mat.getRPY(roll, pitch, yaw);
 
+        pos_x = tf_pose.position.x;
+        pos_y = tf_pose.position.y;
         pos_yaw = float(yaw);
     }
 
