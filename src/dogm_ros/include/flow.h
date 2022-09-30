@@ -2,15 +2,14 @@
 // Created by bjgilhul on 8/9/22.
 //
 
-#ifndef DOGM_ROS_FLOW_H
-#define DOGM_ROS_FLOW_H
+#pragma once
 
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 #include <vector>
 #include <utility>
 #include <opencv2/opencv.hpp>
 
-namespace dogm_ros {
+namespace info_gain {
     enum FlowMethod {
         bilinear,
         nearest
@@ -47,5 +46,3 @@ namespace dogm_ros {
     cv::Mat renderFlow(ArrayGroup flow_data);
 
 }
-
-#endif //DOGM_ROS_FLOW_H

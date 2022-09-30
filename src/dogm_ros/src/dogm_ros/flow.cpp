@@ -2,9 +2,9 @@
 // Created by bjgilhul on 8/9/22.
 //
 
-#include "dogm_ros/flow.h"
+#include "flow.h"
 
-namespace dogm_ros {
+namespace info_gain {
 
         //    Initialize the FlowGrid with a starting probability and motion vectors.  The
         //    motion and score parameters are applied over T time steps, with K instances for
@@ -63,6 +63,9 @@ namespace dogm_ros {
         //    The probability of a cell being flowed into is 1 - PI[ 1 - F(i->j)] where
         //            F(i->j) is the probability of cell i moving into j
         //
+        // TODO: There's a lot of memory allocation and copying going on here -- or at least it appears that
+        //       way at first glance.  Not sure how much is necessary and/or can be improved.  Revisit this
+        //       implementation with a profiler at some point...
         Eigen::ArrayXXf Flow::step( const Eigen::ArrayXXf& occupancy, const VelocityGroup& velocity_group,
                                 const ArrayGroup& score, float dt ) const {
 

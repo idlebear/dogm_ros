@@ -3,16 +3,19 @@
   <name>dogm_ros</name>
   <version>1.0.0</version>
   <description>Dynamic occupancy grid ROS interface.</description>
-  <maintainer email="michael.koesel@uni-ulm.de">Michael Kösel</maintainer>
+  <maintainer email="barry.gilhuly@uwaterloo.ca">Barry Gilhuly</maintainer>
   <license>MIT</license>
-  <url type="website">https://github.com/TheCodez/dynamic-occupancy-grid-map</url>
-  <url type="bugtracker">https://github.com/TheCodez/dynamic-occupancy-grid-map/issues</url>
-  <author email="michael.koesel@uni-ulm.de">Michael Kösel</author>
+  <url type="website">https://github.com/idlebear/dogm_ros</url>
+  <url type="bugtracker">https://github.com/idlebear/dogm_ros/issues</url>
+  <author email="barry.gilhuly@uwaterloo.ca">Barry Gilhuly</author>
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>
+  <depend>tf</depend>
+  <depend>tf2_ros</depend>
   <depend>dogm_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>message_generation</depend>
   <depend>message_runtime</depend>
