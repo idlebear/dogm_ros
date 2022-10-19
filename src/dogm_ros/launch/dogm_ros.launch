@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="cloud_source" default="/carla/ego_vehicle/lidar/lidar1/point_cloud" />
-    <arg name="laser_topic" default="/carla/ego_vehicle/scan"/>
-    <arg name="odometry_topic" default="/carla/ego_vehicle/odometry"/>
+    <arg name="cloud_source" default="/lidar/point_cloud" />
+    <arg name="laser_topic" default="/scan"/>
+    <arg name="odometry_topic" default="/odometry"/>
     <arg name="dogm_topic" default="/dogm/dynamic"/>
     <arg name="map_size" default="100.0"/>
     <arg name="map_resolution" default="0.2"/>
@@ -22,8 +22,8 @@
     <arg name="angle_increment" default="0.0087"/>
     <arg name="laser_sigma" default="0.1"/>
 
-    <arg name="base_frame" default="ego_vehicle"/>
-    <arg name="laser_frame" default="ego_vehicle/lidar"/>
+    <arg name="base_frame" default="base_link"/>
+    <arg name="laser_frame" default="laser"/>
 
     <!-- Launch pointcloud to scan conversion -->
     <include file="$(find dogm_ros)/launch/pointcloud_to_laserscan.launch">
@@ -51,7 +51,7 @@
         <param name="laser/angle_increment" value="$(arg angle_increment)"/>
         <param name="laser/sigma" value="$(arg laser_sigma)"/>
         <param name="tf/base" value="$(arg base_frame)"/>
-        <param name="tf/lidar" value="$(arg lidar_frame)"/>
+        <param name="tf/lidar" value="$(arg laser_frame)"/>
     </node>
 
 
