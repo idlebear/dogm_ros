@@ -17,11 +17,13 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(CUDA REQUIRED)
-find_package(DOGM REQUIRED)
+# find_package(DOGM REQUIRED)
 find_package(OpenCV REQUIRED )
 find_package(Eigen3 3.4 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/dynamic-occupancy-grid-map/dogm)
 
 ###################################
 ## catkin specific configuration ##
@@ -52,8 +54,6 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-message(${DOGM_INCLUDE_DIRS})
-message(${DOGM_LIBRARIES})
 
 ## Specify additional locations of header files
 include_directories(
@@ -73,10 +73,11 @@ add_library(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  ${DOGM_LIBRARIES}
+  # ${DOGM_LIBRARIES}
   ${catkin_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${OpenCV_LIBS}
+  dogm
 )
 
 add_dependencies(${PROJECT_NAME}
@@ -86,11 +87,11 @@ add_dependencies(${PROJECT_NAME}
 add_library(${PROJECT_NAME}_nodelet src/dogm_ros_nodelet.cpp)
 target_link_libraries(${PROJECT_NAME}_nodelet
         ${PROJECT_NAME}
-        ${DOGM_LIBRARIES}
+    #    ${DOGM_LIBRARIES}
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         ${YAML_CPP_LIBRARIES}
-
+    dogm
         )
 
 ### Declare a C++ executable
@@ -104,11 +105,12 @@ add_executable(${PROJECT_NAME}_node src/dogm_ros_node.cpp
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 # target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${DOGM_LIBRARIES} ${catkin_LIBRARIES})
 target_link_libraries( ${PROJECT_NAME}_node
-        ${DOGM_LIBRARIES}
+#        ${DOGM_LIBRARIES}
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         ${YAML_CPP_LIBRARIES}
-)
+        dogm
+        )
 
 
 
