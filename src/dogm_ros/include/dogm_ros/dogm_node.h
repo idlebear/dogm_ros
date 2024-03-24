@@ -2,6 +2,7 @@
 MIT License
 
 Copyright (c) 2019 Michael Kösel
+Copyright (c) 2023 Barry Gilhuly
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +27,26 @@ SOFTWARE.
 #include <dogm/dogm.h>
 #include <dogm/dogm_types.h>
 #include <dogm/mapping/laser_to_meas_grid.h>
-#include <dogm_msgs/DynamicOccupancyGrid.h>
+#include <dogm_msgs/msg/dynamic_occupancy_grid.hpp>
 
 #include <Eigen/Dense>
 #include <mutex>
 
-#include <opencv2/opencv.hpp>
 #include <opencv2/core/cuda.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/opencv.hpp>
 
-#include <ros/ros.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/LaserScan.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <tf/tf.h>
-#include <tf2_ros/transform_listener.h>
+#include <nav_msgs/msg/occupancy_grid.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+
+#include <tf2/LinearMath/Transform.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/message_filter.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/transform_listener.h>
 
 #include "dogm_ros/dogm_ros.h"
 #include "dogm_ros/state_estimate.h"
@@ -51,64 +54,57 @@ SOFTWARE.
 
 namespace dogm_ros {
 
-    class DOGMRos {
-        public:
-            DOGMRos(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh,
-                    bool show_debug = false );
-            virtual ~DOGMRos() = default;
+class DOGM_Node : public rclcpp::Node {
+public:
+    DOGM_Node(const std::string& node_name, bool show_debug);
+    virtual ~DOGM_Node() = default;
 
-            void processLaserScan(const sensor_msgs::LaserScan::ConstPtr &scan);
-            void processOdometry(const nav_msgs::Odometry::ConstPtr &odom_msg);
+    void processLaserScan(const sensor_msgs::msg::LaserScan::SharedPtr scan);
+    void processOdometry(const nav_msgs::msg::Odometry::SharedPtr odom_msg);
 
-            Eigen::MatrixXf getOccupancyGrid();
-            void publishDynamicGrid();
-            void publishOccupancyGrid();
+    Eigen::MatrixXf getOccupancyGrid();
+    void publishDynamicGrid();
+    void publishOccupancyGrid();
 
-            inline std::pair<float,float> getPos() {
-                return std::make_pair( pos_x, pos_y );
-            };
+    inline std::pair<float, float> getPos() { return std::make_pair(pos_x, pos_y); };
 
-            inline float getOrientation() {
-                return pos_yaw;
-            };
+    inline float getOrientation() { return pos_yaw; };
 
-        protected:
-            cv::Mat getMeasuredOccMassImage() const;
-            cv::Mat getMeasuredFreeMassImage() const;
+protected:
+    cv::Mat getMeasuredOccMassImage() const;
+    cv::Mat getMeasuredFreeMassImage() const;
 
-        private:
-            bool show_debug;
-            ros::NodeHandle nh_;
-            ros::NodeHandle private_nh_;
+private:
+    bool show_debug;
 
-            ros::Subscriber subscriber_laser_;
-            ros::Subscriber subscriber_odometry_;
-            ros::Subscriber subscriber_tf_;
-            ros::Publisher publisher_dogm_;
-            ros::Publisher publisher_occ_;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_laser_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscriber_odometry_;
+    rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr subscriber_tf_;
+    rclcpp::Publisher<dogm_msgs::msg::DynamicOccupancyGrid>::SharedPtr publisher_dogm_;
+    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr publisher_occ_;
 
-            tf2_ros::Buffer tf_buffer;
-            tf2_ros::TransformListener tf_listener;
+    std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
+    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
-            dogm::DOGM::Params params_;
-            dogm::LaserMeasurementGrid::Params laser_params_;
+    dogm::DOGM::Params params_;
+    dogm::LaserMeasurementGrid::Params laser_params_;
 
-            double last_scan_update;
-            bool is_first_measurement_;
-            long cumulative_time;
-            int map_count;
+    rclcpp::Time last_scan_update;
+    bool is_first_measurement_;
+    long cumulative_time;
+    int map_count;
 
-            std::unique_ptr<dogm::LaserMeasurementGrid> laser_conv_;
-            std::unique_ptr<dogm::DOGM> grid_map_;
+    std::unique_ptr<dogm::LaserMeasurementGrid> laser_conv_;
+    std::unique_ptr<dogm::DOGM> grid_map_;
 
-            std::string base_frame;
-            std::string lidar_frame;
+    std::string base_frame;
+    std::string lidar_frame;
 
-            float pos_x;
-            float pos_y;
-            float pos_yaw;
+    float pos_x;
+    float pos_y;
+    float pos_yaw;
 
-            std::mutex grid_mutex;
-    };
+    std::mutex grid_mutex;
+};
 
-} // namespace dogm_ros
+}  // namespace dogm_ros

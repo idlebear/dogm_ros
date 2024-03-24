@@ -1,22 +1,32 @@
 <?xml version="1.0"?>
-<package format="2">
-  <name>dogm_ros</name>
-  <version>1.0.0</version>
-  <description>Dynamic occupancy grid ROS interface.</description>
-  <maintainer email="barry.gilhuly@uwaterloo.ca">Barry Gilhuly</maintainer>
-  <license>MIT</license>
-  <url type="website">https://github.com/idlebear/dogm_ros</url>
-  <url type="bugtracker">https://github.com/idlebear/dogm_ros/issues</url>
-  <author email="barry.gilhuly@uwaterloo.ca">Barry Gilhuly</author>
-  <buildtool_depend>catkin</buildtool_depend>
-  <depend>roscpp</depend>
-  <depend>tf</depend>
-  <depend>tf2_ros</depend>
-  <depend>dogm_msgs</depend>
-  <depend>nav_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>message_generation</depend>
-  <depend>message_runtime</depend>
+<package format="3">
+    <name>dogm_ros</name>
+    <version>1.0.0</version>
+    <description>Dynamic occupancy grid ROS2 interface.</description>
+    <maintainer email="barry.gilhuly@uwaterloo.ca">Barry Gilhuly</maintainer>
+    <license>MIT</license>
+    <url type="website">https://github.com/idlebear/dogm_ros</url>
+    <url type="bugtracker">https://github.com/idlebear/dogm_ros/issues</url>
+    <author email="barry.gilhuly@uwaterloo.ca">Barry Gilhuly</author>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
+    <depend>rclcpp</depend>
+    <depend>tf</depend>
+    <depend>tf2</depend>
+    <depend>tf2_ros</depend>
+    <depend>dogm_msgs</depend>
+    <depend>nav_msgs</depend>
+    <depend>std_msgs</depend>
+    <depend>sensor_msgs</depend>
+    <depend>geometry_msgs</depend>
+
+    <exec_depend>rosidl_default_runtime</exec_depend>
+
+    <member_of_group>rosidl_interface_packages</member_of_group>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
 </package>
